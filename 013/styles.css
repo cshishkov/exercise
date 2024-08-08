@@ -1,0 +1,47 @@
+:root {
+    --color-white-fff: #ffffff;
+    --color-black-000: #000000;
+}
+
+body {
+    font-family: "Roboto", sans-serif !important;
+    font-style: normal !important;
+    font-weight: 18px !important;
+}
+
+h1 {
+    font-size: 48px !important;
+    font-weight: 600 !important;
+    line-height: 22px !important;
+}
+
+p {
+    font-size: 14px !important;
+    line-height: 18px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.container {
+    max-width: 1400px !important;
+    width: calc(100% - 2 * 20px) !important;
+    margin: auto;
+}
+
+.edit-button {}
+
+.delete-button {}
+
+.save-button {}
+
+.cancel-button {}
+
+.post-button {}
+
+.expand-button {}
+
+.rating-button {}
+
+.comment {}
+
+.vertical-line {}
