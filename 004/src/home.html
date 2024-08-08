@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home</title>
+
+  <link rel="stylesheet" type="text/css" href="../styles/styles.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+    rel="stylesheet" />
+</head>
+
+<body>
+
+
+  <header>
+    <nav class="navigation">
+      <div class="navigation-wrapper d-flex items-center justify-between h-100 m-auto">
+        <img src="../assets/icons/logo.png" alt="Logo" class="nav-logo cursor-pointer d-none" />
+        <img src="../assets/icons/sandwich-icon.png" alt="Logo" class="nav-logo nav-mobile-logo cursor-pointer " />
+        <ul class="nav-list items-center justify-center list-none d-none">
+          <li>
+            <a href="#" class="no-underline nav-list-item">
+              Home
+            </a>
+          </li>
+          <li>
+            <a href="#portfolio-section" class="no-underline nav-list-item">
+              Portfolio
+            </a>
+          </li>
+          <li>
+            <a href="#contacts-section" class="no-underline nav-list-item">
+              Contact
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+
+    <section class="section-wrapper d-flex p-top">
+      <div class="wrapper w-100 d-flex flex-col">
+        <img src="../assets/icons/portrait.jpg" alt="Photo" class="hero-img" />
+
+        <article class="text-container text-center d-flex w-50 flex-col m-auto">
+          <h1>Chavdar Shishkov</h1>
+          <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque ullam fuga dolore consequuntur facilis
+            atque, illo placeat optio velit animi consequatur nisi molestiae ducimus tempora incidunt possimus rem,
+            magni numquam.
+          </p>
+
+          <ul class="d-flex w-100 list-none p-0 justify-center icons-list">
+            <li>
+              <a href="#">
+                <img src="../assets/icons/facebook-icon.png" alt="Facebook link" class="contacts-icon" />
+              </a>
+            </li>
+            <li>
+              <a href="#">
+                <img src="../assets/icons/instagram-icon.png" alt="Instagram link" class="contacts-icon" />
+              </a>
+            </li>
+            <li>
+              <a href="#">
+                <img src="../assets/icons/whatsapp-img.png" alt="Whatsapp link" class="contacts-icon" />
+              </a>
+            </li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-wrapper p-top">
+      <h2>Services</h2>
+      <p>Just a few of the services i provide</p>
+
+      <div class="d-flex justify-center items-center flex-wrap mt-60">
+
+        <div class="services-card p-10">
+          <img src="../assets/services/mobile-development-img.jpg" alt="Web design img" class="card-img object-fit" />
+          <article class="text-container">
+            <h3>Mobile Development</h3>
+            <p>
+              Cross-platform development with React Native
+            </p>
+          </article>
+        </div>
+
+        <div class="services-card p-10">
+          <img src="../assets/services/web-design-img.png" alt="Web design img" class="card-img object-fit" />
+          <article class="text-container">
+            <h3>Web Development</h3>
+            <p>
+              Web development with HTML, CSS and JavaScript
+            </p>
+          </article>
+        </div>
+
+        <div class="services-card p-10">
+          <img src="../assets/services/backend-dev-img.png" alt="Web design img" class="card-img object-fit" />
+          <article class="text-container">
+            <h3>Backend Development</h3>
+            <p>
+              Backend development with JavaScript or Java
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="portfolio-section" class="portfolio-section section-wrapper p-top">
+      <h2>Portfolio</h2>
+      <p>
+        Here are a few of the works i have done
+      </p>
+
+      <div class="portfolio-wrapper d-flex flex-wrap items-center justify-center mt-60">
+
+        <div class="portfolio-card w-50">
+          <img src="../assets/portfolio/portfolio-img-four.jpg" alt="Project example photo" class="w-100 object-fit" />
+          <article class="portfolio-card-text-wrapper text-left">
+            <h3>Tractorbeam</h3>
+            <p>
+              Music agency
+            </p>
+          </article>
+        </div>
+
+        <div class="portfolio-card w-50">
+          <img src="../assets/portfolio/portfolio-img-tree.jpg" alt="Project example photo" class="w-100 object-fit" />
+          <article class="portfolio-card-text-wrapper text-left">
+            <h3>Arbiten</h3>
+            <p>
+              Portfolio website
+            </p>
+          </article>
+        </div>
+
+        <div class="portfolio-card w-50">
+          <img src="../assets/portfolio/portfolio-img-tree.jpg" alt="Project example photo" class="w-100 object-fit" />
+          <article class="portfolio-card-text-wrapper text-left">
+            <h3>Airbiten</h3>
+            <p>
+              Stock image web platform
+            </p>
+          </article>
+        </div>
+
+        <div class="portfolio-card w-50">
+          <img src="../assets/portfolio/portfolio-img-four.jpg" alt="Project example photo" class="w-100 object-fit" />
+          <article class="portfolio-card-text-wrapper text-left">
+            <h3>Tractorbeam</h3>
+            <p>
+              Music shop platform
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="contacts-section" class="section-wrapper p-top p-bottom">
+      <h2>Let's have a chat</h2>
+      <p>Get in touch with me</p>
+
+      <ul class="contacts-list d-flex p-0 items-center justify-center list-none mt-60">
+        <li>
+          <a href="#">
+            <img src="../assets/contacts/email-img.png" alt="Email" class="contacts-img" />
+          </a>
+        </li>
+        <li>
+          <a href="#">
+            <img src="../assets/contacts/twitter-img.png" alt="Email" class="contacts-img" />
+          </a>
+        </li>
+        <li>
+          <a href="#">
+            <img src="../assets/contacts/facebook-img.png" alt="Email" class="contacts-img" />
+          </a>
+        </li>
+        <li>
+          <a href="#">
+            <img src="../assets/contacts/whatsapp-img.png" alt="Email" class="contacts-img" />
+          </a>
+        </li>
+      </ul>
+    </section>
+
+  </main>
+</body>
+
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <link rel="stylesheet" type="text/css" href="./styles.css" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <main class="main d-flex">
+      <section>
+        <form class="form br-8 p-10 border-black d-flex m-auto">
+          <label for="fname">First Name</label>
+          <input
+            id="fname"
+            type="text"
+            placeholder="First Name"
+            class="mb-10 p-10 input outline-none"
+          />
+
+          <label for="lname">First Name</label>
+          <input
+            id="lname"
+            type="text"
+            placeholder="Last Name"
+            class="mb-10 p-10 input outline-none"
+          />
+
+          <label for="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            placeholder="Email"
+            class="mb-10 p-10 input outline-none"
+          />
+
+          <label for="pass">Password</label>
+          <input
+            id="pass"
+            type="password"
+            placeholder="Password"
+            class="mb-10 p-10 input outline-none"
+          />
+
+          <p>Gender:</p>
+
+          <span class="mb-10">
+            <input id="male" type="radio" value="male" />
+            <label for="male">Male</label>
+          </span>
+
+          <span class="mb-10">
+            <input id="female" type="radio" value="female" />
+            <label for="female">Female</label>
+          </span>
+
+          <span class="mb-10">
+            <label for="tos">Terms and conditions</label>
+            <input id="tos" type="checkbox" value="confirm" />
+          </span>
+
+          <label for="add-inf">Additional Information</label>
+          <textarea
+            id="add-inf"
+            type="text"
+            placeholder="Additional Information"
+            class="mb-10 p-10 br-8 textarea outline-none border-black"
+            rows="10"
+            cols="50"
+          ></textarea>
+
+          <button type="submit" class="submit-button br-8 border-black m-auto">
+            Submit
+          </button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,140 @@
+:root {
+    --color-black-111: #111111;
+    --color-blue-136: #1360A0;
+
+    --color-gray-e9e: #E9E9E9;
+    --color-gray-f2f: #F2F2F2;
+    --color-gray-6F6: #6F6F6F;
+
+    --color-black-191: #191919;
+    --color-black-282: #282828;
+    --color-white-f8f: #F8F8F8;
+
+    --font-size-14: 14px;
+    --font-size-16: 16px;
+    --font-size-20: 20px;
+    --font-size-22: 22px;
+    --font-size-24: 24px;
+    --font-size-26: 26px;
+
+    --line-height-16: 16px;
+    --line-height-22: 22px;
+    --line-height-26: 26px;
+    --line-height-30: 30px;
+    --line-height-36: 36px;
+
+    --font-weight-400: 400;
+    --font-weight-500: 500;
+    --font-weight-600: 600;
+    --font-weight-700: 700;
+}
+
+a {
+    text-decoration: none !important;
+}
+
+h1,
+h2,
+h3 {
+    font-family: 'Source Serif Pro', sans-serif;
+}
+
+h4,
+h5,
+h6 {
+    font-family: "Poppins", sans-serif;
+}
+
+p {
+    font-family: "Poppins", sans-serif;
+}
+
+h1 {
+    font-weight: var(--font-weight-600);
+    font-size: 48px;
+    line-height: 64px;
+    letter-spacing: -1px;
+    color: var(--color-black-111);
+}
+
+h2 {
+    font-weight: var(--font-weight-400);
+    font-size: 46px;
+    line-height: 56px;
+    letter-spacing: -0.5px;
+}
+
+h3 {
+    font-weight: var(--font-weight-400);
+    font-size: 36px;
+    line-height: 54px;
+}
+
+h4 {
+    font-weight: var(--font-weight-400);
+    font-size: 26px;
+    line-height: 36px;
+    color: var(--color-black-111);
+}
+
+h5 {
+    font-weight: var(--font-weight-400);
+    font-size: 24px;
+    line-height: 36px;
+}
+
+h6 {
+    font-weight: var(--font-weight-600);
+    font-size: 20px;
+    line-height: 26px;
+}
+
+p {
+    font-weight: var(--font-weight-400);
+    font-size: 16px;
+    line-height: 26px;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.p-secondary {
+    font-weight: var(--font-weight-400);
+    font-size: 14px;
+    line-height: 26px;
+}
+
+.line-height-36 {
+    line-height: 36px !important;
+}
+
+.line-height-22 {
+    line-height: 22px !important;
+}
+
+.font-italic {
+    font-style: italic !important;
+}
+
+.line-height-20 {
+    line-height: 20px !important;
+}
+
+.font-weight-500 {
+    font-weight: var(--font-weight-500) !important;
+}
+
+.font-weight-600 {
+    font-weight: var(--font-weight-600) !important;
+}
+
+.font-weight-700 {
+    font-weight: var(--font-weight-700) !important;
+}
+
+.text-white-fff {
+    color: var(--color-white-fff) !important;
+}
+
+.color-blue-136 {
+    color: var(--color-blue-136) !important;
+}

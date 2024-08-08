@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+
+  <link rel="stylesheet" type="text/css" href="./styles.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+    rel="stylesheet" />
+</head>
+
+<body>
+  <main class="main d-flex">
+    <section>
+      <form id="register-form" class="form br-8 p-10 border-black d-flex m-auto">
+        <label for="fname">First Name</label>
+        <input id="fname" type="text" placeholder="First Name" class="mb-10 p-10 input outline-none" />
+        <span id="fNameError" class="error">First name error</span>
+
+        <label for="lname">Last Name</label>
+        <input id="lname" type="text" placeholder="Last Name" class="mb-10 p-10 input outline-none" />
+        <span id="lNameError" class="error">Last name error</span>
+
+        <label for="email">Email</label>
+        <input id="email" type="email" placeholder="Email" class="mb-10 p-10 input outline-none" />
+        <span id="emailError" class="error">Email error</span>
+
+        <label for="phone">Phone number</label>
+        <input id="phone" type="text" placeholder="Phone number" class="mb-10 p-10 input outline-none" />
+        <span id="phoneError" class="error">Phone error</span>
+
+        <div class="pass-wrapper">
+          <label for="pass">Password</label>
+          <input id="pass" type="password" placeholder="Password" class="mb-10 p-10 input outline-none" />
+          <img id="pass-hide-switch" src="./assets/hide-icon.png" alt="Show-hide password" class="eye"
+            onclick="toggle('pass')" />
+          <img id="pass-show-switch" src="./assets/show-icon.png" alt="Show-hide password" class="eye invisible"
+            onclick="toggle('pass')" />
+          <span id="passError" class="error">Password error</span>
+        </div>
+
+        <div class="pass-wrapper">
+          <label for="c-pass">Confirm Password</label>
+          <input id="c-pass" type="password" placeholder="Confirm Password" class="mb-10 p-10 input outline-none" />
+          <img id="c-hide-switch" src="./assets/hide-icon.png" alt="Show-hide password" class="eye"
+            onclick="toggle('c-pass')" />
+          <img id="c-show-switch" src="./assets/show-icon.png" alt="Show-hide password" class="eye invisible"
+            onclick="toggle('c-pass')" />
+          <span id="cPassError" class="error">Confirm password error</span>
+        </div>
+
+        <p>Gender:</p>
+        <span class="mb-10">
+          <input id="male" type="radio" name="gender" value="male" />
+          <label for="male">Male</label>
+        </span>
+        <span class="mb-10">
+          <input id="female" type="radio" name="gender" value="female" />
+          <label for="female">Female</label>
+        </span>
+        <span id="genderError" class="error">Please select a gender</span>
+
+        <span class="mb-10">
+          <label for="tos">Terms and conditions</label>
+          <input id="tos" type="checkbox" value="tos" />
+          <span id="tosError" class="error">TOS are required</span>
+        </span>
+
+        <span class="mb-10">
+          <input id="checkbox1" type="checkbox" value="option1" />
+          <label for="checkbox1">Option 1</label>
+        </span>
+        <span class="mb-10">
+          <input id="checkbox2" type="checkbox" value="option2" />
+          <label for="checkbox2">Option 2</label>
+        </span>
+        <span class="mb-10">
+          <input id="checkbox3" type="checkbox" value="option3" />
+          <label for="checkbox3">Option 3</label>
+        </span>
+        <span id="checkboxError" class="error">Please select at least 2 out of 3 options</span>
+
+        <label for="add-inf">Additional Information</label>
+        <textarea id="add-inf" type="text" placeholder="Additional Information"
+          class="mb-10 p-10 br-8 textarea outline-none border-black" rows="10" cols="50"></textarea>
+
+        <button type="submit" class="submit-button br-8 border-black m-auto">
+          Submit
+        </button>
+        <span id="success" class="success align-self-center">Form successfully submitted </span>
+        <span id="formError" class="error align-self-center">Form has errors</span>
+      </form>
+    </section>
+  </main>
+  <script src="./scripts.js"></script>
+</body>
+
+</html>

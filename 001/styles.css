@@ -1,0 +1,71 @@
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+}
+
+section {
+  height: 100vh;
+}
+
+.section-wrapper {
+  max-width: 1200px;
+  width: calc(100% - 2 * 10px);
+  margin: auto;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.d-block {
+  display: block;
+}
+
+.navigation {
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+  background-color: #0cf7e7;
+  padding: 0 20px;
+}
+
+.nav-sandwich-logo {
+  display: none;
+}
+
+.navigation img {
+  height: 50px;
+  cursor: pointer;
+}
+
+.nav-list {
+  gap: 10px;
+  list-style-type: none;
+}
+
+.nav-list a {
+  text-decoration: none;
+  color: #000;
+}
+
+.nav-list a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+@media screen and (max-width: 768px) {
+  .nav-logo {
+    display: none;
+  }
+
+  .nav-sandwich-logo {
+    display: block;
+  }
+  .nav-list {
+    display: none;
+  }
+}
