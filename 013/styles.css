@@ -1,12 +1,15 @@
 :root {
     --color-white-fff: #ffffff;
     --color-black-000: #000000;
+    --color-gray-efe: #EFEFEF;
+    --color-purple-545: #5453A5;
 }
 
 body {
     font-family: "Roboto", sans-serif !important;
     font-style: normal !important;
     font-weight: 18px !important;
+    background-color: var(--color-gray-efe) !important;
 }
 
 h1 {
@@ -26,6 +29,31 @@ p {
     max-width: 1400px !important;
     width: calc(100% - 2 * 20px) !important;
     margin: auto;
+}
+
+.comment {
+    width: 100%;
+    background-color: var(--color-white-fff);
+    padding: 20px;
+
+    .likes-wrapper {
+        margin-right: 20px;
+        background-color: var(--color-purple-545);
+
+        p {
+            margin: 10px 0 !important;
+        }
+
+        .likes-icon {
+            width: 20px;
+            height: auto;
+            cursor: pointer;
+        }
+    }
+}
+
+.ml-auto {
+    margin-left: auto !important;
 }
 
 .edit-button {}
