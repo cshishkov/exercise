@@ -101,7 +101,7 @@ function calculateDaysDifference(dateString) {
     { label: "minute", seconds: 60 },
   ];
 
-  for (let interval of intervals) {
+  intervals.map(interval => {
     const count = Math.floor(diffInSeconds / interval.seconds);
     if (count >= 1) {
       if (count === 1) {
@@ -110,7 +110,7 @@ function calculateDaysDifference(dateString) {
         return `${count} ${interval.label}s ago`;
       }
     }
-  }
+  });
 
   return "just now";
 }
@@ -229,22 +229,29 @@ const blogPosts = (
   commentsSize,
   title,
   content,
+  tags,
   commentsHTML
 ) => {
   return `
         <div class="d-flex flex-column col-12 align-items-start blog-post" data-post-id="${id}">
-            <span class="w-100">
-                <p class="d-flex gap-1">On ${formatDate(
-                  date
-                )} by <a href="">${author}</a>
-                <img src="./assets/comment-icon.png" alt="" class="comment-icon ml--10"/>
-                 ${commentsSize} Comments
+            <span class="w-100 d-flex flex-column flex-sm-row">
+                <p class="d-flex gap-1">
+                On ${formatDate(date)} by <a href="">${author}</a>
                  </p>
+                 <span class="d-flex gap-2 align-items-center ml-auto">
+                 <img src="./assets/comment-icon.png" alt="" class="comment-icon"/>
+                 <p> ${commentsSize} Comments </p>
+                 </span>
             </span>
             <h1 class="my-2">${title}</h1>
             <p class="hidden-text" id="text-content-${id}">
                 ${content}
             </p>
+            <div class="d-flex gap-2 flex-row flex-wrap">
+            ${tags.map(tag=>{
+              return `<h6 class="tag">#${tag}</h6>`
+            }).join("")}
+            </div>
              <div id="comment-section-${id}" class="comments-section row d-none">
                 ${commentsHTML}
             </div>
@@ -303,6 +310,7 @@ articleSection.innerHTML = getData()
       item.comments.length,
       item.title,
       item.content,
+      item.tags,
       commentsHTML
     );
   })

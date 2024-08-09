@@ -126,7 +126,6 @@ a {
 .comment-icon {
     width: 20px;
     height: auto;
-
 }
 
 .reply-icon {
@@ -142,4 +141,18 @@ a {
     outline: none;
     border: none;
     border-radius: 0;
+}
+
+.tag {
+    margin-top: 10px;
+    background-color: var(--color-white-fff);
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: 600 !important;
+}
+
+@media screen and (max-width: 576px) {
+    .ml-auto {
+        margin-left: 0 !important;
+    }
 }
