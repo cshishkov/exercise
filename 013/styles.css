@@ -58,6 +58,14 @@ a {
     font-weight: 600 !important;
 }
 
+.mb--20 {
+    margin-bottom: 20px !important;
+}
+
+.ml--10 {
+    margin-left: 10px !important;
+}
+
 .avatar-img {
     width: 30px;
     height: auto;
@@ -104,6 +112,10 @@ a {
     padding: 20px;
     border-radius: 10px;
 
+    .comment-text {
+        padding-top: 20px;
+    }
+
     .likes-wrapper {
         height: 100px;
         margin-right: 20px;
@@ -123,8 +135,13 @@ a {
     }
 }
 
+.tag-element {
+    max-width: 150px !important;
+}
+
 .comment-icon {
     width: 20px;
+    flex-grow: unset;
     height: auto;
 }
 
