@@ -154,10 +154,14 @@ function handleSubmit(e) {
   console.log(response);
 }
 
+let isOpen = false;
 function onAddPostClick(e) {
   e.preventDefault();
+  const openFormButton = document.getElementById('open-form-button');
   const formContainer = document.getElementById("add-post-container");
-  formContainer.innerHTML = addPostForm();
+  formContainer.innerHTML = isOpen ? addPostForm() : ''
+  openFormButton.textContent = isOpen ? 'Cancel' : 'Add post';
+  isOpen = !isOpen;
 }
 
 let tagsCount = 1;
@@ -181,22 +185,29 @@ const addPostForm = () => {
   return `
 <div class="col-12">
     <form id="add-post-form">
-        <div class="form-row">
+        <div class="form-row mt--20">
             <div class="form-group col-12">
                 <label for="inputName">Name</label>
                 <input type="text" class="form-control" id="inputName" placeholder="Name">
             </div>
+        </div>
+        <div class="form-row mt--20">
             <div class="form-group col-12">
                 <label for="inputTitle">Title</label>
                 <input type="text" class="form-control" id="inputTitle" placeholder="Title">
             </div>
+        </div>
+        <div class="form-row mt--20">
             <div class="form-group col-12">
                 <label for="inputContent">Content</label>
                 <textarea type="text" class="form-control" id="inputContent" placeholder="Content"></textarea>
             </div>
+        </div>
+        <div class="form-row mt--20">
             <div class="col-12">
                 <label for="inputTag">Tags
-                <img src="./assets/plus-icon.png" alt="" class="comment-icon cursor-pointer" onclick="onAddTagClick(event);"/>
+                    <img src="./assets/plus-icon.png" alt="" class="comment-icon cursor-pointer"
+                        onclick="onAddTagClick(event);" />
                 </label>
                 <div class="row">
                     <div id="tags-wrapper" class="col-12 d-flex flex-wrap align-items-center gap-1">
@@ -205,7 +216,9 @@ const addPostForm = () => {
                 </div>
             </div>
         </div>
-          <button type="submit" class="" onclick="handleSubmit(event);">Submit</button>
+        <div class="form-row d-flex w-100 align-items-center justify-content-center">
+            <button type="submit" class="read-more-button mt--20 align-self-center" onclick="handleSubmit(event);">Submit</button>
+        </div>
     </form>
 </div>
   `;
@@ -334,8 +347,13 @@ const replySection = (id) => {
   `;
 };
 
+
 function onShowMoreClick(postId, e) {
   e.preventDefault();
+
+  if (postStates[postId] === undefined) {
+    postStates[postId] = false; 
+  }
 
   const content = document.getElementById(`text-content-${postId}`);
   const commentSection = document.getElementById(`comment-section-${postId}`);
@@ -363,7 +381,7 @@ const renderPosts = (
   comments
 ) => {
   return `
-  <div id="article-${index}" class="row gap-2">
+  <div id="article-${index}" class="row gap-2 mt--20">
     <div class="col-12">
         <span class="w-100 d-flex flex-column flex-sm-row">
             <p class="d-flex gap-1">
