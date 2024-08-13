@@ -30,6 +30,10 @@ a {
     text-decoration: none !important;
 }
 
+.my--20 {
+    margin: 20px 0 20px 0 !important;
+}
+
 .container {
     max-width: 1400px !important;
     width: calc(100% - 2 * 10px) !important;
@@ -106,7 +110,13 @@ a {
     }
 }
 
-.comment {
+.offset {
+    max-width: 90% !important;
+    margin-left: auto !important;
+}
+
+.comment-wrapper {
+    margin-top: 20px !important;
     width: 100%;
     background-color: var(--color-white-fff);
     padding: 20px;

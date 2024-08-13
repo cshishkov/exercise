@@ -116,12 +116,18 @@ function calculateDaysDifference(dateString) {
   return "just now";
 }
 
+function generateId() {
+  return Math.random().toString(36).slice(2, 9);
+}
+
 function onIncrementLikesClick(e) {
-  e.preventDefaults();
+  e.preventDefault();
+  console.log("increase");
 }
 
 function onDecreaseLikesClick(e) {
-  e.preventDefaults();
+  e.preventDefault();
+  console.log("decrease");
 }
 
 function handleSubmit(e) {
@@ -193,7 +199,7 @@ const addPostForm = () => {
                 <textarea type="text" class="form-control" id="inputContent" placeholder="Content"></textarea>
             </div>
             <div class="col-12">
-                <label for="inputTag">Tags 
+                <label for="inputTag">Tags
                 <img src="./assets/plus-icon.png" alt="" class="comment-icon cursor-pointer" onclick="onAddTagClick(event);"/>
                 </label>
                 <div class="row">
@@ -209,15 +215,16 @@ const addPostForm = () => {
   `;
 };
 
-function onDeleteClick(e) {
+function onDeleteClick(id, e) {
   e.preventDefault();
-  const commentElement = e.target.closest(".row");
+  const commentElement = document.getElementById(id);
   commentElement.remove();
 }
 
-function onEditClick(e) {
+
+function onEditClick(id, e) {
   e.preventDefault();
-  const commentElement = e.target.closest(".comment");
+  const commentElement = document.getElementById(id);
   const contentElement = commentElement.querySelector(".comment-text");
 
   const currentText = contentElement.textContent.trim();
@@ -225,36 +232,15 @@ function onEditClick(e) {
   contentElement.innerHTML = `
         <textarea class="form-control edit-textarea" rows="5">${currentText}</textarea>
         <div class="edit-actions mt-2">
-            <button class="read-more-button save-edit">Save</button>
-            <button class="read-more-button cancel-edit">Cancel</button>
+            <button class="read-more-button save-edit" onclick="onSaveEditClick(${id}, event);">Save</button>
+            <button class="read-more-button cancel-edit" onclick="onCancelEditClick(${id}, event);">Cancel</button>
         </div>
     `;
-
-  const saveButton = commentElement.querySelector(".save-edit");
-  const cancelButton = commentElement.querySelector(".cancel-edit");
-
-  saveButton.addEventListener("click", onSaveEditClick);
-  cancelButton.addEventListener("click", onCancelEditClick);
 }
 
-function onSaveEditClick(e) {
+function onCancelEditClick(id, e) {
   e.preventDefault();
-  const commentElement = e.target.closest(".comment");
-  const textareaElement = commentElement.querySelector(".edit-textarea");
-  const contentElement = commentElement.querySelector(".comment-text");
-
-  const newText = textareaElement.value.trim();
-
-  if (newText) {
-    contentElement.innerHTML = newText;
-  } else {
-    onCancelEditClick(e);
-  }
-}
-
-function onCancelEditClick(e) {
-  e.preventDefault();
-  const commentElement = e.target.closest(".comment");
+  const commentElement = document.getElementById(id);
   const textareaElement = commentElement.querySelector(".edit-textarea");
   const contentElement = commentElement.querySelector(".comment-text");
 
@@ -263,251 +249,97 @@ function onCancelEditClick(e) {
   contentElement.innerHTML = originalText;
 }
 
-function onReplyClick(e) {
+function onSaveEditClick(id, e) {
+  e.preventDefault();
+  const commentElement = document.getElementById(id);
+  console.log(commentElement);
+
+  const textareaElement = commentElement.querySelector(".edit-textarea");
+  const contentElement = commentElement.querySelector(".comment-text");
+
+  const newText = textareaElement.value.trim();
+
+  if (newText) {
+    contentElement.innerHTML = newText;
+  }
+}
+
+function onCancelReplyClick(id, e) {
   e.preventDefault();
 
-  const commentElement = e.target.closest(".row");
-  commentElement.insertAdjacentHTML("beforeend", replySection());
-}
-
-function onSubmitReplyClick(e) {
-  e.preventDefault();
-
-  const reply = document.getElementById("inputReply").value;
-
-  const commentElement = e.target.closest(".row");
-  const commentId = commentElement.dataset.commentId;
-
-  const comment = findCommentById(commentId);
-
-  comment.replies.push({
-    id: generateUniqueId(),
-    author: "John Doe",
-    text: reply,
-    createdAt: new Date().toISOString(),
-    likes: 0,
-  });
-
-  const commentsHTML = renderComments(getComments());
-  const commentSection = document.getElementById(
-    `comment-section-${comment.postId}`
-  );
-  commentSection.innerHTML = commentsHTML;
-
-  onCancelReplyClick(e);
-}
-
-function findCommentById(id) {
-  let foundComment = null;
-  getData().some((post) => {
-    return post.comments.some((comment) => {
-      if (comment.id === id) {
-        foundComment = comment;
-        return true;
-      }
-      return false;
-    });
-  });
-  return foundComment;
-}
-
-function generateUniqueId() {
-  return "_" + Math.random().toString(36).substr(2, 9);
-}
-
-function onCancelReplyClick(e) {
-  e.preventDefault();
-
-  const replySection = e.target.closest("#reply-comment-section");
+  const replySection = document.getElementById(`reply-comment-section-${id}`);
   const reply = document.getElementById("inputReply");
   reply.textContent = "";
   replySection.remove();
 }
 
-function createButton({ text, icon, onClick, extraClasses = "" }) {
-  return `
-    <button class="btn btn-link p-0 ${extraClasses}" onclick="${onClick}">
-      <img src="${icon}" alt="${text} icon" class="reply-icon" />
-      <span class="font-weight-600">${text}</span>
-    </button>
-  `;
+function onReplyClick(id, e) {
+  e.preventDefault();
+
+  const commentElement = document.getElementById(id);
+
+  if (commentElement) {
+    commentElement.insertAdjacentHTML('beforeend', replySection(id));
+  }
 }
 
-function createCommentHeader(author, date) {
-  return `
-    <div class="d-flex gap-3">
-      <img src="./assets/avatar-icon.jpg" alt="" class="avatar-img" />
-      <h4 class="m-0">${author}</h4>
-      <p class="m-0 align-self-center">${calculateDaysDifference(date)}</p>
-    </div>
-  `;
+function onSubmitReplyClick(id, e) {
+  e.preventDefault();
+
+  const reply = document.getElementById("inputReply");
+
+  const comment = findCommentById(id);
+
+  if (comment) {
+    comment.replies.push({
+      id: generateId(),
+      author: "John Doe",
+      text: reply.value,
+      createdAt: new Date().toISOString(),
+      likes: 0,
+    });
+  }
+
+  onCancelReplyClick(id, e);
 }
 
-function createCommentActions(offset) {
-  return `
-    <div class="d-flex align-items-center ml-auto gap-3">
-      ${createButton({
-        text: "Delete",
-        icon: "./assets/trash-icon.png",
-        onClick: "onDeleteClick(event);",
-      })}
-      ${createButton({
-        text: "Edit",
-        icon: "./assets/edit-icon.png",
-        onClick: "onEditClick(event);",
-      })}
-      ${!offset ? createReplyButton() : ""}
-    </div>
-  `;
-}
+function findCommentById(id) {
+  let foundComment = null;
+  id = Number(id);
 
-function createReplyButton() {
-  return createButton({
-    text: "Reply",
-    icon: "./assets/reply-icon.png",
-    onClick: "onReplyClick(event)",
+  getData().some((post) => {
+    return post.comments.some((com) => {
+      if (Number(com.id) === id) {
+        foundComment = com;
+        return true;
+      }
+      return false;
+    });
   });
+
+  return foundComment;
 }
 
-function createLikeButtons(likes) {
+const replySection = (id) => {
   return `
-    <div class="d-flex flex-column align-items-center likes-wrapper">
-      ${createButton({
-        text: "",
-        icon: "./assets/plus-icon.png",
-        onClick: "onIncrementLikesClick(event);",
-      })}
-      <p class="user-select-none m-0">${likes}</p>
-      ${createButton({
-        text: "",
-        icon: "./assets/minus-icon.png",
-        onClick: "onDecreaseLikesClick(event);",
-      })}
+<div id="reply-comment-section-${id}" class="col-12 w-100 px-0 mb--20">
+    <div class="comment col-12">
+        <form>
+            <div class="form-group mb--20">
+                <label for="inputReply">Reply</label>
+                <textarea class="form-control" id="inputReply" rows="3"></textarea>
+            </div>
+            <button type="submit" class="read-more-button" onclick="onSubmitReplyClick(${id},event)">Submit</button>
+            <button class="read-more-button" onclick="onCancelReplyClick(${id}, event)">Cancel</button>
+        </form>
     </div>
+</div>
   `;
-}
+};
 
-function createCommentContent(content) {
-  return `
-    <p class="comment-text mt-2">${content}</p>
-  `;
-}
+function onShowMoreClick(postId, e) {
+  e.preventDefault();
 
-function renderComment(author, date, content, likes, offset = false) {
-  return `
-    <div class="row ${offset ? "mt-3" : "mt-4"}">
-      <div class="comment d-flex col-12 ${offset ? "max-w-90" : ""}">
-        ${createLikeButtons(likes)}
-        <div class="w-100">
-          <div class="d-flex align-items-center justify-content-start gap-3">
-            ${createCommentHeader(author, date)}
-            ${createCommentActions(offset)}
-          </div>
-          ${createCommentContent(content)}
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderComments(comments) {
-  return comments
-    .map((cm) => {
-      const commentHTML = renderComment(
-        cm.author,
-        cm.createdAt,
-        cm.text,
-        cm.likes
-      );
-      const nestedCommentsHTML =
-        cm.replies?.length > 0
-          ? cm.replies
-              .map((rep) =>
-                renderComment(
-                  rep.author,
-                  rep.createdAt,
-                  rep.text,
-                  rep.likes,
-                  true
-                )
-              )
-              .join("")
-          : "";
-      return commentHTML + nestedCommentsHTML;
-    })
-    .join("");
-}
-
-function createBlogHeader(id, date, author, commentsSize) {
-  return `
-    <div class="d-flex justify-content-between">
-      <p>On ${formatDate(date)} by <a href="#">${author}</a></p>
-      <div class="d-flex gap-2 align-items-center">
-        <img src="./assets/comment-icon.png" alt="Comments" class="comment-icon"/>
-        <p>${commentsSize} Comments</p>
-      </div>
-    </div>
-  `;
-}
-
-function createBlogTitle(title) {
-  return `<h1 class="my-2">${title}</h1>`;
-}
-
-function createBlogContent(id, content) {
-  return `<p class="hidden-text" id="text-content-${id}">${content}</p>`;
-}
-
-function createBlogTags(tags) {
-  return `
-    <div class="d-flex gap-2 flex-wrap mt-2">
-      ${tags
-        .map((tag) => `<span class="badge badge-secondary">#${tag}</span>`)
-        .join("")}
-    </div>
-  `;
-}
-
-function createCommentSection(id, commentsHTML) {
-  return `
-    <div id="comment-section-${id}" class="comments-section d-none">
-      ${commentsHTML}
-    </div>
-  `;
-}
-
-function createReadMoreButton(id) {
-  return `
-    <button id="read-more-${id}" onclick="onShowMoreClick('${id}');" class="btn btn-link mt-4">
-      READ MORE...
-    </button>
-  `;
-}
-
-function renderBlogPost(post, index) {
-  const commentsHTML = renderComments(post.comments);
-  return `
-    <div class="col-12 blog-post" data-post-id="${index}">
-      ${createBlogHeader(
-        index,
-        post.createdAt,
-        post.author.name,
-        post.comments.length
-      )}
-      ${createBlogTitle(post.title)}
-      ${createBlogContent(index, post.content)}
-      ${createBlogTags(post.tags)}
-      ${createCommentSection(index, commentsHTML)}
-      ${createReadMoreButton(index)}
-    </div>
-  `;
-}
-
-function renderBlogPosts(posts) {
-  return posts.map((post, index) => renderBlogPost(post, index)).join("");
-}
-
-function onShowMoreClick(postId) {
   const content = document.getElementById(`text-content-${postId}`);
   const commentSection = document.getElementById(`comment-section-${postId}`);
   const button = document.getElementById(`read-more-${postId}`);
@@ -524,23 +356,114 @@ function onShowMoreClick(postId) {
   postStates[postId] = !postStates[postId];
 }
 
-function renderBlogPosts(posts) {
-  return posts
-    .map((post, index) => {
-      const commentsHTML = renderComments(post.comments);
-      return blogPosts(
-        index,
-        post.createdAt,
-        post.author.name,
-        post.comments.length,
-        post.title,
-        post.content,
-        post.tags,
-        commentsHTML
-      );
+const renderPosts = (
+  index,
+  author,
+  date,
+  commentsSize,
+  title,
+  content,
+  comments
+) => {
+  return `
+  <div id="article-${index}" class="row gap-2">
+    <div class="col-12">
+        <span class="w-100 d-flex flex-column flex-sm-row">
+            <p class="d-flex gap-1">
+                On ${formatDate(date)} by <a href="">${author}</a>
+            </p>
+            <span class="d-flex gap-2 align-items-center ml-auto">
+                <img src="./assets/comment-icon.png" alt="" class="comment-icon" />
+                <p> ${commentsSize} Comments </p>
+            </span>
+        </span>
+    </div>
+    <div class="col-12">
+        <h1>${title}</h1>
+    </div>
+    <div id="${`text-content-${index}`}" class="col-12">
+        ${content}
+    </div>
+    <div id="${`comment-section-${index}`}" class="col-12">
+    ${comments}
+    </div>
+    <div class="col-12">
+      <button id="read-more-${index}" onclick="onShowMoreClick('${index}',event);" class="read-more-button d-flex align-items-center justify-content-center mt-4">
+        READ MORE...
+      </button>
+      </div>
+  </div>
+  `;
+};
+
+const renderComments = (comment = [], offset = false) => {
+  return comment
+    .map((cm) => {
+      return `
+<div id="${`${offset ? "sub-comment" : "comment"}-${cm.id}`}" class="row comment-wrapper g-0 ${offset ? " offset" : ""
+        }">
+    <div class="col-1">
+        <div class="d-flex flex-column align-items-center justify-content-between likes-wrapper">
+            <img src="./assets/plus-icon.png" alt="" class="likes-icon" onclick="onIncrementLikesClick(event);" />
+            <p class="user-select-none">${cm.likes}</p>
+            <img src="./assets/minus-icon.png" alt="" class="likes-icon" onclick="onDecreaseLikesClick(event);" />
+        </div>
+    </div>
+    <div class="col-11">
+        <div class="row">
+            <div class="col-12 d-flex flex-column flex-md-row align-items-center gap-2">
+                <img src="./assets/avatar-icon.jpg" alt="" class="avatar-img" />
+                <h4 class="m-0">${cm.author}</h4>
+                <p>
+                    ${calculateDaysDifference(cm.date)}
+                </p>
+
+                <span class="d-flex align-items-center ml-auto gap-3 flex-column flex-md-row">
+                    <span class="d-flex align-items-center cursor-pointer" onclick="onDeleteClick('${offset ? `sub-comment-${cm.id}` : `comment-${cm.id}`}', event)">
+                        <img src="./assets/trash-icon.png" alt="" class="reply-icon" />
+                        <p class="font-weight-600">Delete</p>
+                    </span>
+                   <span class="d-flex align-items-center cursor-pointer" onclick="onEditClick('${offset ? `sub-comment-${cm.id}` : `comment-${cm.id}`}', event)">
+                      <img src="./assets/edit-icon.png" alt="" class="reply-icon" />
+                      <p class="font-weight-600">Edit</p>
+                    </span>
+                    ${!offset
+          ? ` <span class="d-flex align-items-center cursor-pointer" onclick="onReplyClick(comment-${cm.id}, event)">
+                        <img src="./assets/reply-icon.png" alt="" class="reply-icon" />
+                        <p class="font-weight-600">Reply</p>
+                    </span>`
+          : ""
+        }
+                </span>
+            </div>
+            <div class="col-12 comment-text">
+                <p>${cm.text}</p>
+            </div>
+        </div>
+    </div>
+</div>
+${renderComments(cm.replies, true)}
+    `;
     })
     .join("");
-}
+};
 
-const articleSection = document.getElementById("article-section");
-articleSection.innerHTML = renderBlogPosts(getData());
+const articleSection = document.getElementById("article-content");
+
+articleSection.insertAdjacentHTML(
+  "beforeend",
+  getData()
+    .map((item) => {
+      const comments = renderComments(item.comments);
+      return renderPosts(
+        item.id,
+        item.author.name,
+        item.createdAt,
+        item.comments.length,
+        item.title,
+        item.content,
+        comments
+      );
+    })
+    .join("")
+);
