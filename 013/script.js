@@ -138,10 +138,6 @@ function handleSubmit(e) {
   const content = document.getElementById("inputContent");
   const tagContent = document.querySelectorAll("#tag-el");
 
-  tagContent.forEach((element) => {
-    console.log(element.value);
-  });
-
   const response = {
     title: title.value,
     author: {
@@ -149,10 +145,10 @@ function handleSubmit(e) {
     },
     content: content.value,
     tags: Array.from(tagContent, (el) => {
-      if (el.value !== "") {
+      if (el.value !== "" || el.value !== undefined) {
         return el.value;
       }
-    }),
+    }).filter(String),
   };
 
   console.log(response);
@@ -232,15 +228,17 @@ function onEditClick(id, e) {
   contentElement.innerHTML = `
         <textarea class="form-control edit-textarea" rows="5">${currentText}</textarea>
         <div class="edit-actions mt-2">
-            <button class="read-more-button save-edit" onclick="onSaveEditClick(${id}, event);">Save</button>
-            <button class="read-more-button cancel-edit" onclick="onCancelEditClick(${id}, event);">Cancel</button>
+            <button class="read-more-button save-edit" onclick="onSaveEditClick('${id}', event);">Save</button>
+            <button class="read-more-button cancel-edit" onclick="onCancelEditClick('${id}', event);">Cancel</button>
         </div>
     `;
 }
 
 function onCancelEditClick(id, e) {
   e.preventDefault();
+
   const commentElement = document.getElementById(id);
+
   const textareaElement = commentElement.querySelector(".edit-textarea");
   const contentElement = commentElement.querySelector(".comment-text");
 
@@ -252,7 +250,6 @@ function onCancelEditClick(id, e) {
 function onSaveEditClick(id, e) {
   e.preventDefault();
   const commentElement = document.getElementById(id);
-  console.log(commentElement);
 
   const textareaElement = commentElement.querySelector(".edit-textarea");
   const contentElement = commentElement.querySelector(".comment-text");
