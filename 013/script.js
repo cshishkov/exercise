@@ -1,101 +1,181 @@
-const url = "http://localhost:3000";
+/**
+ * @typedef {Object} Author
+ * @property {string} name
+ */
 
-class AxiosPP {
-  constructor(url) {
-    if (AxiosPP.instance) {
-      return AxiosPP.instance;
+/**
+ * @typedef {Object} Comment
+ * @property {string} id
+ * @property {string} author
+ * @property {string} text
+ * @property {string} createdAt
+ * @property {number} likes
+ * @property {Reply[]} replies
+ */
+
+/**
+ * @typedef {Object} Reply
+ * @property {string} id
+ * @property {string} author
+ * @property {string} text
+ * @property {string} createdAt
+ * @property {number} likes
+ */
+
+/**
+ * @typedef {Object} Article
+ * @property {number} id
+ * @property {string} title
+ * @property {Author} author
+ * @property {string} createdAt
+ * @property {string} content
+ * @property {string[]} tags
+ * @property {Comment[]} comments
+ * @property {number} likes
+ * @property {number} views
+ */
+
+class DataService {
+  /**
+   * @param {string} apiUrl
+   */
+  constructor(apiUrl) {
+    if (DataService.instance) {
+      return DataService.instance;
     }
-
-    this._url = url;
-    AxiosPP.instance = this;
+    /** @type {string} */
+    this.apiUrl = apiUrl;
+    /** @type {Article[]} */
+    this.data = [];
+    DataService.instance = this;
   }
 
-  get url() {
-    return this._url;
-  }
-
-  set url(url) {
-    this._url = url;
-  }
-
-  async get(url) {
+  /**
+   * @returns {Promise<Article[] | null>}
+   */
+  async getAll() {
     try {
-      const response = await fetch(url ? `${this._url}/${url}` : this._url);
+      const response = await fetch(this.apiUrl);
       if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`);
+        throw new Error(`Error fetching data: ${response.statusText}`);
+      }
+      this.data = await response.json();
+      return this.data;
+    } catch (error) {
+      console.error("Error fetching all data:", error);
+      return null;
+    }
+  }
+
+  /**
+   * @param {number} id
+   * @returns {Promise<Article | null>}
+   */
+  async getById(id) {
+    try {
+      const response = await fetch(`${this.apiUrl}/${id}`);
+      if (!response.ok) {
+        throw new Error(`Error fetching data: ${response.statusText}`);
       }
       return await response.json();
-    } catch (err) {
-      throw new Error(err.message);
+    } catch (error) {
+      console.error("Error fetching data by ID:", error);
+      return null;
     }
   }
 
-  async post(url, data) {
+  /**
+   * @param {Article} article
+   * @returns {Promise<Article | null>}
+   */
+  async create(article) {
     try {
-      const response = await fetch(this._url + "/" + url, {
+      const response = await fetch(this.apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(article),
       });
-
       if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`);
+        throw new Error(`Error creating data: ${response.statusText}`);
       }
-      return await response.json();
-    } catch (err) {
-      throw new Error(err.message);
+      const newArticle = await response.json();
+      this.data.push(newArticle);
+      return newArticle;
+    } catch (error) {
+      console.error("Error creating data:", error);
+      return null;
     }
   }
 
-  async put(url, data) {
+  /**
+   * @param {Article} article
+   * @returns {Promise<Article | null>}
+   */
+  async update(article) {
+    if (!article.id) {
+      throw new Error("Article must have an ID to be updated");
+    }
+
     try {
-      const response = await fetch(this._url + "/" + url, {
+      const response = await fetch(`${this.apiUrl}/${article.id}`, {
         method: "PUT",
-        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(article),
       });
 
       if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`)
+        throw new Error(`Error updating data: ${response.statusText}`);
       }
 
-      return await response.json();
-    } catch (err) {
-      throw new Error(err.message)
+      const updatedArticle = await response.json();
+      const index = this.data.findIndex((item) => item.id === article.id);
+      if (index !== -1) {
+        this.data[index] = updatedArticle;
+      }
+      return updatedArticle;
+    } catch (error) {
+      console.error("Error updating data:", error);
+      return null;
     }
   }
 
+  /**
+   * @param {number} id
+   * @returns {Promise<boolean>}
+   */
   async delete(id) {
     try {
-      const response = await fetch(`${this._url} /${id}`, {
+      const response = await fetch(`${this.apiUrl}/${id}`, {
         method: "DELETE",
       });
-
       if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`);
+        throw new Error(`Error deleting data: ${response.statusText}`);
       }
-      return await response.json();
-    } catch (err) {
-      throw new Error(err.message);
+      this.data = this.data.filter((article) => article.id !== id);
+      return true;
+    } catch (error) {
+      console.error("Error deleting data:", error);
+      return false;
     }
+  }
+
+  /**
+   * @returns {Article[]}
+   */
+  getData() {
+    return this.data;
   }
 }
 
-const apiClient = new AxiosPP(url);
-
-document.addEventListener("DOMContentLoaded", fetchData());
-const postStates = {};
-
-async function fetchData() {
-  const getData = await apiClient.get("posts");
-  localStorage.setItem("posts", JSON.stringify(getData));
-}
-
-function getData() {
-  return JSON.parse(localStorage.getItem("posts"));
-}
-
+/**
+ *
+ * @param {string} dateString
+ * @returns {string}
+ */
 function formatDate(dateString) {
   const date = new Date(dateString);
   const options = {
@@ -106,508 +186,846 @@ function formatDate(dateString) {
   return date.toLocaleDateString("en-US", options);
 }
 
-function calculateDaysDifference(dateString) {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now - date) / 1000);
+/**
+ *
+ * @param {string} createdDate
+ * @returns
+ */
+function calculateDaysDifference(createdDate) {
+  const createdAt = new Date(createdDate);
+  const currentDate = new Date();
 
-  const intervals = [
-    { label: "year", seconds: 31536000 },
-    { label: "month", seconds: 2592000 },
-    { label: "day", seconds: 86400 },
-    { label: "hour", seconds: 3600 },
-    { label: "minute", seconds: 60 },
-  ];
+  const differenceInTime = currentDate.getTime() - createdAt.getTime();
+  const differenceInDays = Math.floor(differenceInTime / (1000 * 3600 * 24));
 
-  intervals.map((interval) => {
-    const count = Math.floor(diffInSeconds / interval.seconds);
-    if (count >= 1) {
-      if (count === 1) {
-        return `${count} ${interval.label} ago`;
-      } else {
-        return `${count} ${interval.label}s ago`;
-      }
-    }
-  });
-
-  return "just now";
+  return differenceInDays === 0 ? "Today" : `${differenceInDays} days ago`;
 }
 
-function generateId() {
+/**
+ *
+ * @returns {string}
+ */
+function generateUniqueId() {
   return Math.random().toString(36).slice(2, 9);
 }
 
-async function onIncrementLikesClick(id, e) {
+const apiUrl = "http://localhost:3000/api/articles";
+const dataService = new DataService(apiUrl);
 
-  const comment = document.getElementById(id);
+/**
+ * @returns {Promise<void>}
+ */
+async function loadData() {
+  try {
+    await dataService.getAll();
+    renderArticles(dataService.getData());
+  } catch (error) {
+    console.error(error);
+  }
 }
 
-async function onDecreaseLikesClick(id, e) {
+/**
+ * @param {Article[]} articles
+ */
+function renderArticles(articles) {
+  const articleContainer = document.getElementById("article-content");
 
-  const comment = document.getElementById(id);
-}
-
-async function handleSubmit(e) {
-
-
-  const name = document.getElementById("inputName");
-  const title = document.getElementById("inputTitle");
-  const content = document.getElementById("inputContent");
-  const tagContent = document.querySelectorAll("#tag-el");
-
-  const response = {
-    title: title.value,
-    author: {
-      name: name.value,
-    },
-    content: content.value,
-    tags: Array.from(tagContent, (el) => {
-      if (el.value !== "" || el.value !== undefined) {
-        return el.value;
-      }
-    }).filter(String),
-    views: 0,
-    likes: 0,
-    comments: []
-  };
-
-  await apiClient.post("posts", response);
-}
-
-let isOpen = false;
-function onAddPostClick(e) {
-
-  const openFormButton = document.getElementById('open-form-button');
-  const formContainer = document.getElementById("add-post-container");
-  formContainer.innerHTML = isOpen ? addPostForm() : ''
-  openFormButton.textContent = isOpen ? 'Cancel' : 'Add post';
-  isOpen = !isOpen;
-}
-
-const addPostForm = () => {
-  return `
-<div class="col-12">
-    <form id="add-post-form">
-        <div class="form-row mt--20">
-            <div class="form-group col-12">
-                <label for="inputName">Name</label>
-                <input type="text" class="form-control" id="inputName" placeholder="Name">
-            </div>
-        </div>
-        <div class="form-row mt--20">
-            <div class="form-group col-12">
-                <label for="inputTitle">Title</label>
-                <input type="text" class="form-control" id="inputTitle" placeholder="Title">
-            </div>
-        </div>
-        <div class="form-row mt--20">
-            <div class="form-group col-12">
-                <label for="inputContent">Content</label>
-                <textarea type="text" class="form-control" id="inputContent" placeholder="Content"></textarea>
-            </div>
-        </div>
-        <div class="form-row mt--20">
-            <div class="col-12">
-                <label for="inputTag">Tags
-                    <img src="./assets/plus-icon.png" alt="" class="comment-icon cursor-pointer"
-                        onclick="onAddTagClick(event);" />
-                </label>
-                <div class="row">
-                    <div id="tags-wrapper" class="col-12 d-flex flex-wrap align-items-center gap-1">
-                        <input id="tag-el" type="text" class="form-control tag-element" placeholder="Tag">
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="form-row d-flex w-100 align-items-center justify-content-center">
-            <button type="submit" class="read-more-button mt--20 align-self-center" onclick="handleSubmit(event);">Submit</button>
-        </div>
-    </form>
-</div>
-  `;
-};
-
-let tagsCount = 1;
-function onAddTagClick(e) {
-
-
-  const tagsWrapper = document.getElementById("tags-wrapper");
-
-  const tagElement = `<input id="tag-el" type="text" class="form-control tag-element" placeholder="Tag" >`
-
-  tagsWrapper.insertAdjacentHTML("afterbegin", tagElement);
-
-  tagsCount++;
+  articleContainer.insertAdjacentHTML(
+    "beforeend",
+    articles
+      .map((article) => {
+        const comments = renderComments(
+          article.id,
+          article.comments.length > 0 ? article.comments.id : 0,
+          article.comments
+        );
+        return renderArticle(
+          article.id,
+          article.author.name,
+          article.createdAt,
+          article.comments.length > 0 ? article.comments.length : 0,
+          article.title,
+          article.content,
+          article.tags,
+          comments
+        );
+      })
+      .join("")
+  );
 }
 
 
-async function onDeleteClick(id, e) {
 
+/**
+ *
+ * @param {number} articleId
+ * @param {number} commentId
+ * @param {Comment[]} comment
+ * @param {boolean} offset [offset=false]
+ */
+function renderComments(articleId, commentId, comments, offset = false) {
+  const offsetClass = offset ? "ms-5" : "";
 
-  const commentElement = document.getElementById(id);
+  return comments
+    .map((comment) => {
+      const repliesHtml = Array.isArray(comment.replies)
+        ? renderComments(articleId, comment.id, comment.replies, true)
+        : "";
 
-  const ids = extractIds(id);
-  const articleId = ids[0];
-  const commentId = ids[1];
-  const subCommentId = ids.length > 2 ? ids[2] : null;
+      const commentIdHtml = offset
+        ? `sub-comment-${articleId}-${commentId}-${comment.id}`
+        : `comment-${articleId}-${comment.id}`;
 
-  const article = findArticleById(articleId);
+      const renderRepliesText = repliesHtml
+        ? `<p class="replies color-purple-515 font-weight-600 d-flex align-items-center gap-1 cursor-pointer" onclick="toggleReplies('${commentIdHtml}')">
+        <img src="./assets/reply-icon.svg" alt="Reply icon" class="comment-icon"/>
+        Show Replies</p>`
+        : "";
 
-  const commentIndex = article[0].comments.findIndex(c => c.id === commentId);
+      const buttons = {
+        delete: createButton('trash-icon.svg', 'color-red-d79', 'Delete', commentIdHtml, 'onDeleteClick'),
+        reply: !offset ? createButton('reply-icon.svg', 'color-purple-515', 'Reply', commentIdHtml, 'onReplyClick') : '',
+        edit: createButton('edit-icon.svg', 'color-purple-515', 'Edit', commentIdHtml, 'onEditClick'),
+      };
 
-  const comment = article[0].comments[commentIndex];
+      return `
+  <div id='${commentIdHtml}' class="row comment mt-2 ${offsetClass} p-3">
+    <div class="col-1">
+      <div class="d-flex flex-column align-items-center justify-content-center likes-wrapper gap-3">
+        <img src="./assets/plus-icon.svg" alt="Plus icon" class="likes-icon" onclick="onIncrementLikesClick('${commentIdHtml}')"/>
+        <span class="font-weight-600 color-purple-515 likes-count">${comment.likes}</span>
+        <img src="./assets/minus-icon.svg" alt="Minus icon" class="likes-icon" onclick="onDecreaseLikesClick('${commentIdHtml}')"/>
+      </div>
+    </div>
+    <div class="col-11">
+      <div class="row">
+        <div class="col-12 d-flex flex-column flex-md-row justify-content-between">
+        <span class="d-flex align-items-center gap-2 p-2 p-md-0">
+          <img src="./assets/avatar-icon.jpeg" alt="" class="avatar-img" />
+          <h5 class="m-0 text-nowrap">${comment.author}</h5>
+          <p class="color-gray-8c8">
+            ${calculateDaysDifference(comment.createdAt)}
+          </p>
+          </span>
+          <span class="d-flex align-items-center gap-1">
+          ${buttons.edit}
+          ${buttons.delete}
+          ${buttons.reply}
+          </span>
+        </div>
+        <div class="col-12">
+        <p class="comment-text">${comment.text}</p>
+        </div>
+        
+      </div>
+      ${renderRepliesText}
+    </div>
+  </div>
+ <div id="replies-${commentIdHtml}" class="replies-container d-none">
+            ${repliesHtml}
+          </div>
+`;
+    })
+    .join("");
+}
+
+/**
+ *
+ * @param {string} commentIdHtml
+ * @param {string} updatedContent
+ */
+async function updateCommentData(commentIdHtml, updatedContent) {
+  const [articleId, commentId, subCommentId] = extractIds(commentIdHtml);
+
+  const article = dataService.getData().find((a) => a.id === articleId);
+  const comment = article.comments.find((c) => c.id === commentId);
+  let commentToUpdate = comment;
 
   if (subCommentId) {
-    const subCommentIndex = comment.replies.findIndex(r => r.id === parseInt(subCommentId));
-    if (subCommentIndex > -1) {
-      comment.replies.splice(subCommentIndex, 1);
+    const subComment = comment.replies.find((r) => r.id === subCommentId);
+    if (!subComment) return;
+
+    commentToUpdate = subComment;
+  }
+
+  commentToUpdate.text = updatedContent;
+
+  try {
+    await dataService.update(article);
+    getData();
+  } catch (err) {
+    console.error("Error updating comment:", err);
+  }
+}
+
+
+/**
+ *
+ * @param {string} commentId
+ * @param {Event} event
+ */
+async function onSaveEditClick(commentId, event) {
+  event.stopPropagation();
+
+  const commentElement = document.getElementById(commentId);
+  const textarea = commentElement.querySelector(".edit-textarea");
+  const updatedText = textarea.value.trim();
+
+  try {
+    await updateCommentData(commentId, updatedText);
+
+    const contentElement = commentElement.querySelector(".comment-text");
+    if (contentElement) {
+      contentElement.textContent = updatedText;
+    }
+  } catch (err) {
+    console.error("Failed to update comment:", err);
+  }
+}
+
+
+/**
+ *
+ * @param {string} commentId
+ * @param {Event} event
+ */
+function onCancelEditClick(commentId, event) {
+  event.stopPropagation();
+
+  const commentElement = document.getElementById(commentId);
+  const contentElement = commentElement.querySelector(".comment-text");
+
+  const originalText = contentElement.dataset.originalText;
+
+  contentElement.innerHTML = originalText;
+}
+
+/**
+ *
+ * @param {string} commentId
+ */
+function onEditClick(commentId) {
+  const commentElement = document.getElementById(commentId);
+  if (!commentElement) return;
+
+  const contentElement = commentElement.querySelector(".comment-text");
+  if (!contentElement) return;
+
+  if (commentElement.querySelector(".edit-textarea")) return;
+
+  const currentText = contentElement.textContent.trim();
+
+  contentElement.dataset.originalText = currentText;
+
+  contentElement.innerHTML = `
+    <textarea class="form-control edit-textarea" rows="5">${currentText}</textarea>
+    <div class="edit-actions mt-2">
+      <button class="button-primary outline-none border-none save-edit" onclick="onSaveEditClick('${commentId}', event);">Save</button>
+      <button class="button-primary outline-none border-none cancel-edit" onclick="onCancelEditClick('${commentId}', event);">Cancel</button>
+    </div>
+  `;
+}
+
+
+/**
+ *
+ * @param {string} id
+ */
+function toggleReplies(id) {
+  const repliesContainer = document.getElementById(`replies-${id}`);
+  const toggleButton = document.querySelector(`p[onclick="toggleReplies('${id}')"]`);
+
+  if (repliesContainer && toggleButton) {
+    repliesContainer.classList.toggle("d-none");
+
+    const imgElement = toggleButton.querySelector('img');
+    if (repliesContainer.classList.contains("d-none")) {
+      toggleButton.textContent = "Show Replies";
     } else {
-      console.log('Sub-comment not found');
-      return;
+      toggleButton.textContent = "Hide Replies";
+    }
+
+    toggleButton.prepend(imgElement);
+  }
+}
+
+/**
+ * Handles likes increment or decrement for a comment.
+ * @param {string} commentIdHtml
+ * @param {number} change
+ */
+function updateLikes(commentIdHtml, change) {
+  const commentElement = document.getElementById(commentIdHtml);
+  if (!commentElement) return;
+
+  const likesElement = commentElement.querySelector(".likes-count");
+  if (!likesElement) return;
+
+  let currentLikes = parseInt(likesElement.textContent, 10);
+  if (isNaN(currentLikes)) return;
+
+  const updatedLikes = Math.max(0, currentLikes + change);
+  likesElement.textContent = updatedLikes;
+
+  updateLikesData(commentIdHtml, updatedLikes);
+}
+
+/**
+ * 
+ * @param {string} commentIdHtml
+ */
+function onIncrementLikesClick(commentIdHtml) {
+  updateLikes(commentIdHtml, 1);
+}
+
+/**
+ * 
+ * @param {string} commentIdHtml
+ */
+function onDecreaseLikesClick(commentIdHtml) {
+  updateLikes(commentIdHtml, -1);
+}
+
+/**
+ * 
+ * @param {string} commentIdHtml
+ * @param {number} updatedLikes
+ */
+async function updateLikesData(commentIdHtml, updatedLikes) {
+  const [articleId, commentId, subCommentId] = extractIds(commentIdHtml);
+
+  const article = dataService.getData().find((a) => a.id === articleId);
+
+  const comment = article.comments.find((c) => c.id === commentId);
+
+  if (subCommentId) {
+    const subComment = comment.replies.find((r) => r.id === subCommentId);
+    if (subComment) {
+      subComment.likes = updatedLikes;
+    }
+  } else {
+    comment.likes = updatedLikes;
+  }
+
+  try {
+    await dataService.update(article);
+    getData();
+  } catch (err) {
+    console.error("Failed to update likes:", err);
+  }
+}
+
+/**
+ *
+ * @param {number} commentId
+ */
+function onReplyClick(commentId) {
+  const replyComment = document.getElementById(commentId);
+
+  if (replyComment.querySelector(".reply-form")) {
+    return;
+  }
+
+  const replyFormHtml = `
+    <div class="reply-form mt-2 comment row">
+      <div class="col-12">
+        <h3>Reply to comment</h3>
+      </div>
+      <div class="col-12">
+        <textarea required class="form-control" rows="3" placeholder="Write your reply..."></textarea>
+        <div class="mt-2 d-flex gap-2">
+          <button class="btn btn-primary" onclick="onSubmitReply('${commentId}')">Submit</button>
+          <button class="btn btn-secondary" onclick="onCancelReply('${commentId}')">Cancel</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  replyComment.insertAdjacentHTML("afterend", replyFormHtml);
+}
+
+/**
+ *
+ * @param {string} commentId
+ */
+async function onSubmitReply(commentId) {
+  const replyForm = document.getElementById(commentId).nextElementSibling;
+
+  const replyText = replyForm.querySelector("textarea").value.trim();
+  if (!replyText) {
+    return;
+  }
+
+  const [articleId, commentsId, subCommentId] = extractIds(commentId);
+
+  const updatedData = dataService.getData();
+  const article = updatedData.find((article) => article.id == articleId);
+  const comment = findCommentById(article.comments, commentsId, subCommentId);
+
+  const newReply = {
+    id: generateUniqueId(),
+    author: "John Doe",
+    text: replyText,
+    createdAt: new Date().toISOString(),
+    likes: 0,
+  };
+
+  comment.replies.push(newReply);
+
+  try {
+    await dataService.update(article);
+    loadData();
+  } catch (err) {
+    console.error("Failed to update article with new reply:", err);
+  }
+}
+
+/**
+ * @param {Comment[]} comments
+ * @param {number} commentId
+ * @param {number} subCommentId
+ */
+function findCommentById(comments, commentId, subCommentId = null) {
+  const comment = comments.find((comment) => comment.id == commentId);
+  if (!comment) {
+    return null;
+  }
+
+  if (!subCommentId) {
+    return comment;
+  }
+
+  const reply = comment.replies.find((reply) => reply.id == subCommentId);
+  return reply || null;
+}
+
+/**
+ * @param {string} commentId
+ */
+function onCancelReply(commentId) {
+  const replyForm = document.getElementById(commentId).nextElementSibling;
+  if (replyForm && replyForm.classList.contains("reply-form")) {
+    replyForm.remove();
+  }
+}
+
+/**
+ * @param {string} commentIdHtml
+ */
+async function onDeleteClick(commentIdHtml) {
+  const element = document.getElementById(commentIdHtml);
+  const [articleId, commentId, subCommentId] = extractIds(commentIdHtml);
+
+  const updatedData = removeComment(dataService.getData(), articleId, commentId, subCommentId);
+
+  const updatedArticle = updatedData.find((article) => article.id == articleId);
+
+  if (updatedArticle) {
+    try {
+      await dataService.update(updatedArticle);
+      element.remove();
+      loadData();
+    } catch (error) {
+      console.error("Error updating article:", error);
     }
   }
-  else {
-    article.comments.splice(commentIndex, 1);
-  }
-
-  if (commentElement) {
-    commentElement.remove();
-  }
-
-  await apiClient.put(`posts/${articleId}`, article);
 }
 
-function findArticleById(id) {
-  return getData().filter(article => article.id == id)[0];
-}
-
+/**
+ *
+ * @param {string} inputString
+ * @returns {string[]}
+ */
 function extractIds(inputString) {
   const parts = inputString.split("-");
 
   if (parts[0] === "comment") {
-    return [parts[1], parts[2]];
+    return [parts[1], parts[2], null];
   }
 
   if (parts[0] === "sub" && parts[1] === "comment") {
     return [parts[2], parts[3], parts[4]];
   }
 
-  return [];
+  return [null, null, null];
 }
 
-function onEditClick(id, e) {
+/**
+ * @param {Article[]} data
+ * @param {number} articleId
+ * @param {string} commentId
+ * @param {string | null} subCommentId
+ * @returns {Article[]}
+ */
+function removeComment(data, articleId, commentId, subCommentId) {
+  return data.map((article) => {
+    if (article.id === articleId) {
+      const updatedComments = article.comments
+        .map((comment) => {
+          if (comment.id == commentId) {
+            if (subCommentId) {
+              const updatedReplies = comment.replies.filter((reply) => reply.id != subCommentId);
+              return {
+                ...comment,
+                replies: updatedReplies,
+              };
+            }
+            return null;
+          }
+          return comment;
+        })
+        .filter((comment) => comment != null);
 
-  const commentElement = document.getElementById(id);
-  const contentElement = commentElement.querySelector(".comment-text");
-
-  const currentText = contentElement.textContent.trim();
-
-  contentElement.innerHTML = `
-        <textarea class="form-control edit-textarea" rows="5">${currentText}</textarea>
-        <div class="edit-actions mt-2">
-            <button class="read-more-button save-edit" onclick="onSaveEditClick('${id}', event);">Save</button>
-            <button class="read-more-button cancel-edit" onclick="onCancelEditClick('${id}', event);">Cancel</button>
-        </div>
-    `;
-}
-
-function onCancelEditClick(id, e) {
-
-
-  const commentElement = document.getElementById(id);
-
-  const textareaElement = commentElement.querySelector(".edit-textarea");
-  const contentElement = commentElement.querySelector(".comment-text");
-
-  const originalText = textareaElement.value.trim();
-
-  contentElement.innerHTML = originalText;
-}
-
-async function onSaveEditClick(id, e) {
-
-  const commentElement = document.getElementById(id);
-  const ids = extractIds(id);
-
-  const articleId = ids[0];
-  const commentId = ids[1];
-  const subCommentId = ids.length > 2 ? ids[2] : null;
-
-  const article = findArticleById(articleId);
-
-  const comment = article.comments.find(c => c.id === commentId);
-
-  const textareaElement = commentElement.querySelector(".edit-textarea");
-  const contentElement = commentElement.querySelector(".comment-text");
-
-  const newText = textareaElement.value.trim();
-
-  if (newText) {
-    if (subCommentId) {
-      const subComment = comment.replies.find(r => r.id === parseInt(subCommentId));
-      if (subComment) {
-        subComment.text = newText;
-      } else {
-        console.log('Sub-comment not found');
-        return;
-      }
-    } else {
-      comment.text = newText;
+      return {
+        ...article,
+        comments: updatedComments,
+      };
     }
-
-    contentElement.innerHTML = newText;
-
-    await apiClient.put(`posts/${articleId}`, article)
-  }
-}
-
-function onCancelReplyClick(id, e) {
-
-
-  const replySection = document.getElementById(`reply-comment-section-${id}`);
-  const reply = document.getElementById("inputReply");
-  reply.textContent = "";
-  replySection.remove();
-}
-
-function onReplyClick(id, e) {
-
-
-  const commentElement = document.getElementById(id);
-
-  if (commentElement) {
-    commentElement.insertAdjacentHTML('beforeend', replySection(id));
-  }
-}
-
-function onCancelCommentClick(id, e) {
-
-  e.stopPropagation()
-  const parts = id.split('-');
-
-
-  const replySection = document.getElementById(`reply-comment-section-${parts[1]}`);
-
-  replySection.remove();
-}
-
-function onSubmitCommentClick(id, e) {
-
-  console.log(id);
-}
-
-function replySection(id, isComment) {
-  return `
-          <div id="reply-comment-section-${id}" class="col-12 w-100 px-0 mb--20">
-              <div class="comment col-12">
-                  <form>
-                      <div class="form-group mb--20">
-                          <label for="inputReply">${isComment ? "Comment" : "Reply"}</label>
-                          <textarea class="form-control" id="inputReply" rows="3"></textarea>
-                      </div>
-                      <button type="submit" class="read-more-button" 
-                      onclick="${isComment ? onSubmitCommentClick(id, event) : onSubmitReplyClick(id, event)}">Submit</button>
-                      <button class="read-more-button" 
-                      onclick="${isComment ? onCancelCommentClick(id, event) : onCancelReplyClick(id, event)}">Cancel</button>
-                  </form>
-              </div>
-          </div>`;
-}
-
-function onSubmitReplyClick(id, e) {
-
-
-  const reply = document.getElementById("inputReply");
-
-  const comment = findCommentById(id);
-
-  if (comment) {
-    comment.replies.push({
-      id: generateId(),
-      author: "John Doe",
-      text: reply.value,
-      createdAt: new Date().toISOString(),
-      likes: 0,
-    });
-  }
-
-  onCancelReplyClick(id, e);
-}
-
-function findCommentById(id) {
-  let foundComment = null;
-  id = Number(id);
-
-  getData().some((post) => {
-    return post.comments.some((com) => {
-      if (Number(com.id) === id) {
-        foundComment = com;
-        return true;
-      }
-      return false;
-    });
+    return article;
   });
-
-  return foundComment;
 }
 
-function onShowMoreClick(postId, e) {
+const createButton = (icon, color, text, commentIdHtml, onClickHandler) =>
+  `<button class="outline-none background-none border-none d-flex align-items-center justify-content-center gap-1 ${color} font-weight-600 text-nowrap" onclick="${onClickHandler}('${commentIdHtml}')">
+    <img src="./assets/${icon}" alt="${text} button icon" class="comment-icon"/>
+    ${text}
+  </button>`;
 
+/**
+ *
+ * @param {number} index
+ * @param {Author} author
+ * @param {string} date
+ * @param {number} commentsSize
+ * @param {string} title
+ * @param {string} content
+ * @param {string[]} tags
+ * @param {string} comments
+ */
+function renderArticle(index, author, date, commentsSize, title, content, tags, comments) {
+  const articleIndexHtml = `article-${index}`;
 
-  if (postStates[postId] === undefined) {
-    postStates[postId] = false;
+  if (!articleState[articleIndexHtml]) {
+    articleState[articleIndexHtml] = {
+      commentsVisible: false,
+      commentFormVisible: false,
+    };
   }
 
-  const content = document.getElementById(`text-content-${postId}`);
-  const commentSection = document.getElementById(`comment-section-${postId}`);
-  const button = document.getElementById(`read-more-${postId}`);
+  const buttons = {
+    edit: createButton('edit-icon.svg', 'color-purple-515', 'Edit', articleIndexHtml, 'onEditArticleClick'),
+    delete: createButton('trash-icon.svg', 'color-red-d79', 'Delete', articleIndexHtml, 'onDeleteArticleClick'),
+    toggleComments: `<button id="toggle-comments-${articleIndexHtml}" class="button-primary outline-none border-none" onclick="toggleComments('${articleIndexHtml}')">
+    Show Comments</button>`,
+    toggleCommentForm: `<button id="toggle-comment-form-${articleIndexHtml}" class="button-primary outline-none border-none" onclick="toggleCommentForm('${articleIndexHtml}')">Leave Comment</button>`
+  };
 
-  content.classList.toggle("hidden-text");
-  commentSection.classList.toggle("d-none");
-
-  if (postStates[postId]) {
-    button.textContent = "READ MORE...";
-  } else {
-    button.textContent = "HIDE";
-  }
-
-  postStates[postId] = !postStates[postId];
-}
-
-const renderPosts = (
-  index,
-  author,
-  date,
-  commentsSize,
-  title,
-  content,
-  tags,
-  comments
-) => {
   return `
-  <div id="article-${index}" class="row gap-2 mt--20">
-    <div class="col-12">
-        <span class="w-100 d-flex flex-column flex-sm-row">
-            <p class="d-flex gap-1">
-                On ${formatDate(date)} by <a href="">${author}</a>
-            </p>
-            <span class="d-flex gap-2 align-items-center mx-sm-2">
-                <img src="./assets/comment-icon.png" alt="" class="comment-icon" />
-                <p> ${commentsSize} Comments </p>
-            </span>
-            <span>
-           
-            </span>
+    <div id="${articleIndexHtml}" class="row mt--100 gap-3 article p-3">
+      <div class="col-12 d-flex align-items-center justify-content-between flex-column flex-md-row">
+        <span class="">
+          On ${formatDate(date)} by <a href="">${author}</a>
         </span>
-    </div>
-    <div class="col-12">
-        <h1>${title}</h1>
-    </div>
-    <div id="${`text-content-${index}`}" class="col-12 hidden-text">
-        ${content}
-    </div>
-    <div id="${tags ? `tags-${index}` : '0'}" class="d-flex flex-wrap align-items-center gap-2">
-        ${tags.map(tag => { return `<div class="tag">#${tag}</div>`; }).join("")}
-    </div>
-    <div id="${`comment-section-${index}`}" class="col-12 d-none">
-    ${comments}
-    </div>
-    <div class="col-12">
-    ${comments.length > 0 ?
-      `<button id="read-more-${index}" onclick="onShowMoreClick('${index}', event);" class="read-more-button d-flex align-items-center justify-content-center mt-4">
-        READ MORE...
-      </button>`:
-      `<button id="leave-comment-${index}" onclick="onLeaveCommentClick('article-${index}', event);" class="read-more-button d-flex align-items-center justify-content-center mt-4">
-        LEAVE COMMENT
-      </button>`}
+        <span class="d-flex gap-3 align-items-center p-2 p-md-0">
+          ${buttons.edit}
+          ${buttons.delete}
+          <p class="text-nowrap">
+            <img src="./assets/comment-icon.svg" alt="Comment icon" class="comment-icon" />
+            <a href=""> ${commentsSize} Comments</a>
+          </p>
+        </span>
       </div>
-  </div>
+      <div class="col-12">
+        <h1 id="title">${title}</h1>
+      </div>
+      <div class="col-12">
+        <p id="content">${content}</p>
+      </div>
+      <div id="tags-${articleIndexHtml}" class="col-12 d-flex flex-wrap gap-2">
+        ${tags.map(tag => `<div class="tag border-radius-10 font-weight-600">#${tag}</div>`).join("")}
+      </div>
+      <div class="col-12 d-flex flex-column flex-sm-row gap-2">
+        ${buttons.toggleComments}
+        ${buttons.toggleCommentForm}
+      </div>
+     
+      <div id="comment-form-${articleIndexHtml}" class="col-12 mt-2 comment p-3 d-none">
+        <h3>Add a Comment</h3>
+        <textarea id="new-comment-${index}" class="form-control" rows="3" placeholder="Write your comment..."></textarea>
+        <div class="mt-2 d-flex gap-2">
+          <button class="button-primary outline-none border-none" onclick="onSubmitArticleComment('${index}')">Submit</button>
+        </div>
+      </div>
+    </div>
+     <div id="comments-${articleIndexHtml}" class="col-12 d-none">
+        ${comments}
+      </div>
   `;
-};
-
-function onLeaveCommentClick(id, e) {
-  const postSection = document.getElementById(id);
-  const parts = id.split('-');
-
-  const article = findArticleById(parts[1]);
-  
-  postSection.insertAdjacentHTML('beforeend', replySection(id, true));
 }
 
-const renderComments = (articleId, commentId, comment = [], offset = false) => {
-  return comment
-    .map((cm) => {
-      return `
-<div id="${offset ? `sub-comment-${articleId}-${commentId}-${cm.id}` : `comment-${articleId}-${cm.id}`}" class="row comment-wrapper g-0 ${offset ? "offset" : ""
-        }">
-    <div class="col-1">
-        <div class="d-flex flex-column align-items-center justify-content-between likes-wrapper">
-            <img src="./assets/plus-icon.png" alt="" class="likes-icon" 
-            onclick="onIncrementLikesClick('${offset ? `sub-comment-${articleId}-${commentId}-${cm.id}` : `comment-${articleId}-${cm.id}`}',event);" />
-            <p class="user-select-none">${cm.likes}</p>
-            <img src="./assets/minus-icon.png" alt="" class="likes-icon" 
-            onclick="onDecreaseLikesClick('${offset ? `sub-comment-${articleId}-${commentId}-${cm.id}` : `comment-${articleId}-${cm.id}`}',event);" />
+const articleState = {};
+
+/**
+ * 
+ * @param {string} articleIndexHtml 
+ */
+function toggleComments(articleIndexHtml) {
+  const commentsSection = document.getElementById(`comments-${articleIndexHtml}`);
+  const showHideButton = document.getElementById(`toggle-comments-${articleIndexHtml}`);
+
+  const isHidden = commentsSection.classList.toggle('d-none');
+  showHideButton.innerText = isHidden ? 'Show Comments' : 'Hide Comments';
+}
+
+function toggleCommentForm(articleIndexHtml) {
+  const commentForm = document.getElementById(`comment-form-${articleIndexHtml}`);
+  const leaveCommentButton = document.getElementById(`toggle-comment-form-${articleIndexHtml}`);
+
+  const isHidden = commentForm.classList.toggle('d-none');
+  leaveCommentButton.innerText = isHidden ? 'Leave Comment' : 'Hide Comment Form';
+}
+
+/**
+ *
+ * @param {string} articleIdHtml
+ */
+function onEditArticleClick(articleIdHtml) {
+  const articleElement = document.getElementById(articleIdHtml);
+  const titleElement = articleElement.querySelector("#title");
+  const contentElement = articleElement.querySelector("#content");
+  const tagsElements = articleElement.querySelectorAll(".tag");
+
+  const titleText = titleElement.textContent.trim();
+  const contentText = contentElement.textContent.trim();
+  const tagsText = Array.from(tagsElements).map((tag) => tag.textContent.slice(1));
+
+  articleElement.innerHTML = `
+    <div class="row mt--20 gap-3">
+      <div class="col-12">
+        <input type="text" id="edit-article-title" class="form-control mb-3" value="${titleText}" />
+      </div>
+      <div class="col-12">
+        <textarea id="edit-article-content" class="form-control mb-3" rows="4">${contentText}</textarea>
+      </div>
+      <div class="col-12">
+        <label for="edit-tags-wrapper" class="form-label">Tags
+          <img src="./assets/plus-icon.svg" alt="Add Tag" class="comment-icon cursor-pointer" onclick="onAddEditTagClick();" />
+        </label>
+        <div id="edit-tags-wrapper" class="d-flex flex-wrap gap-2 mb-3">
+          ${tagsText
+      .map(
+        (tag) =>
+          `<div class="mb-2"><input type="text" class="form-control tag-element" value="${tag}" /></div>`
+      )
+      .join("")}
         </div>
+      </div>
+      <div class="col-12">
+        <button class="btn btn-primary" onclick="onSaveArticleClick('${articleIdHtml}')">Save</button>
+        <button class="btn btn-secondary" onclick="onCancelEditArticleClick('${articleIdHtml}')">Cancel</button>
+      </div>
     </div>
-    <div class="col-11">
-        <div class="row">
-            <div class="col-12 d-flex flex-column flex-md-row align-items-center gap-2">
-                <img src="./assets/avatar-icon.jpg" alt="" class="avatar-img" />
-                <h4 class="m-0">${cm.author}</h4>
-                <p>
-                    ${calculateDaysDifference(cm.date)}
-                </p>
+  `;
+}
 
-                <span class="d-flex align-items-center ml-auto gap-3 flex-column flex-md-row">
-                    <span class="d-flex align-items-center cursor-pointer" 
-                    onclick="onDeleteClick('${offset ? `sub-comment-${articleId}-${commentId}-${cm.id}` : `comment-${articleId}-${cm.id}`}', event)">
-                        <img src="./assets/trash-icon.png" alt="" class="reply-icon" />
-                        <p class="font-weight-600">Delete</p>
-                    </span>
-                   <span class="d-flex align-items-center cursor-pointer" 
-                   onclick="onEditClick('${offset ? `sub-comment-${articleId}-${commentId}-${cm.id}` : `comment-${articleId}-${cm.id}`}', event)">
-                      <img src="./assets/edit-icon.png" alt="" class="reply-icon" />
-                      <p class="font-weight-600">Edit</p>
-                    </span>
-                    ${!offset
-          ? ` <span class="d-flex align-items-center cursor-pointer" 
-          onclick="onReplyClick('comment-${articleId}-${cm.id}', event)">
-                        <img src="./assets/reply-icon.png" alt="" class="reply-icon" />
-                        <p class="font-weight-600">Reply</p>
-                    </span>`
-          : ""
-        }
-                </span>
-            </div>
-            <div class="col-12 comment-text">
-                <p>${cm.text}</p>
-            </div>
+/**
+ *
+ * @param {string} articleIdHtml
+ */
+async function onSaveArticleClick(articleIdHtml) {
+  const articleElement = document.getElementById(articleIdHtml);
+
+  const title = document.getElementById("edit-article-title").value.trim();
+  const content = document.getElementById("edit-article-content").value.trim();
+  const tags = Array.from(document.querySelectorAll("#edit-tags-wrapper .tag-element"))
+    .map((tag) => tag.value.trim())
+    .filter((tag) => tag !== "");
+
+  const articleId = articleIdHtml.split("-")[1];
+  const article = dataService.getData().find((article) => article.id == articleId);
+
+  article.title = title;
+  article.content = content;
+  article.tags = tags;
+
+  try {
+    await dataService.update(article);
+    loadData();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function onCancelEditArticleClick() {
+  window.location.reload();
+}
+
+function onAddEditTagClick() {
+  const tagsWrapper = document.getElementById("edit-tags-wrapper");
+
+  const tagElement = `
+    <div class="mb-2">
+      <input type="text" class="form-control tag-element" placeholder="Tag">
+    </div>
+  `;
+
+  tagsWrapper.insertAdjacentHTML("beforeend", tagElement);
+}
+
+/**
+ * @param {string} articleIdHtml
+ */
+async function onDeleteArticleClick(articleIdHtml) {
+  const articleId = articleIdHtml.split("-")[1];
+
+
+  if (confirm("Are you sure you want to delete this article?")) {
+    try {
+      await dataService.delete(articleId);
+      document.getElementById(articleIdHtml).remove();
+    } catch (error) {
+      console.error("Error deleting article:", error);
+    }
+  }
+}
+
+/**
+ * @param {number} articleId
+ */
+async function onSubmitArticleComment(articleId) {
+  const commentText = document.getElementById(`new-comment-${articleId}`).value.trim();
+  if (!commentText) {
+    alert("Comment text cannot be empty.");
+    return;
+  }
+
+  const article = dataService.getData().find((article) => article.id === articleId);
+  if (!article) {
+    console.error("Article not found");
+    return;
+  }
+
+  const newComment = {
+    id: generateUniqueId(),
+    author: "John Doe",
+    text: commentText,
+    createdAt: new Date().toISOString(),
+    likes: 0,
+    replies: [],
+  };
+
+  article.comments.push(newComment);
+
+  try {
+    await dataService.update(article);
+    loadData();
+  } catch (err) {
+    console.error("Error updating article with new comment:", err);
+  }
+}
+
+/**
+ *
+ * @param {Event} event
+ */
+function onCreateArticleClick(event) {
+  event.preventDefault();
+
+  const formHtml = `
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">Create New Article</h5>
+          </div>
+          <div class="card-body">
+            <form id="article-form">
+              <div class="mb-3">
+                <label for="article-title" class="form-label">Title</label>
+                <input type="text" class="form-control" id="article-title" required>
+              </div>
+              <div class="mb-3">
+                <label for="article-content" class="form-label">Content</label>
+                <textarea class="form-control" id="article-content" rows="4" required></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="tags-wrapper" class="form-label">Tags
+                  <img src="./assets/plus-icon.svg" alt="Add Tag" class="comment-icon cursor-pointer" onclick="onAddTagClick();" />
+                </label>
+                <div id="tags-wrapper" class="d-flex flex-wrap gap-2">
+                  <div class="mb-2">
+                    <input type="text" class="form-control tag-element" placeholder="Tag">
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex justify-content-between">
+                <button type="submit" class="button-primary outline-none border-none">Submit</button>
+                <button type="button" class="button-primary outline-none border-none" onclick="onCancelArticleClick()">Cancel</button>
+              </div>
+            </form>
+          </div>
         </div>
+      </div>
     </div>
-</div>
-${renderComments(articleId, cm.id, cm.replies, true)}
-    `;
-    })
-    .join("");
-};
+  `;
 
-const articleSection = document.getElementById("article-content");
+  const formContainer = document.getElementById("article-form-container");
+  formContainer.innerHTML = formHtml;
 
-articleSection.insertAdjacentHTML(
-  "beforeend",
-  getData()
-    .map((item) => {
-      const comments = renderComments(item.id, item.comments.length > 0 ? item.comments.id : 0, item.comments);
-      return renderPosts(
-        item.id,
-        item.author.name,
-        item.createdAt,
-        item.comments.length > 0 ? item.comments.length : 0,
-        item.title,
-        item.content,
-        item.tags,
-        comments
-      );
-    })
-    .join("")
-);
+  document.getElementById("article-creation").style.display = "none";
+
+  document.getElementById("article-form").addEventListener("submit", handleFormSubmit);
+}
+
+function onAddTagClick() {
+  const tagsWrapper = document.getElementById("tags-wrapper");
+
+  const tagElement = `
+    <div class="mb-2">
+      <input type="text" class="form-control tag-element" placeholder="Tag">
+    </div>
+  `;
+
+  tagsWrapper.insertAdjacentHTML("beforeend", tagElement);
+}
+
+function onCancelArticleClick() {
+  const formContainer = document.getElementById("article-form-container");
+  formContainer.innerHTML = "";
+
+  document.getElementById("article-creation").style.display = "block";
+}
+
+/**
+ *
+ * @param {Event} event
+ */
+async function handleFormSubmit(event) {
+  event.preventDefault();
+
+  const title = document.getElementById("article-title").value.trim();
+  const content = document.getElementById("article-content").value.trim();
+  const tags = Array.from(document.querySelectorAll(".tag-element"))
+    .map((tag) => tag.value.trim())
+    .filter((tag) => tag !== "");
+
+  const newArticle = {
+    id: generateUniqueId(),
+    title: title,
+    author: {
+      name: "John Doe",
+    },
+    createdAt: new Date().toISOString(),
+    content: content,
+    tags: tags,
+    comments: [],
+    likes: 0,
+    views: 0,
+  };
+
+  await dataService.create(newArticle);
+
+  onCancelArticleClick();
+}
+
+loadData();
