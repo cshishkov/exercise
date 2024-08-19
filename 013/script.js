@@ -38,22 +38,40 @@ const apiUrl = "http://localhost:3000/api/articles";
  */
 
 const dataState = {
+  /** @type {Article[]} */
   articles: [],
+  /** @type {boolean} */
   loaded: false,
 
+  /**
+   * 
+   * @param {Article[]} newArticles 
+   */
   setArticles(newArticles) {
     this.articles = newArticles;
     this.loaded = true;
   },
 
+  /**
+   * 
+   * @returns {Article[]}
+   */
   getArticles() {
     return this.articles;
   },
 
+  /**
+   * 
+   * @param {Article} article 
+   */
   addArticle(article) {
     this.articles.push(article);
   },
 
+  /**
+   * 
+   * @param {Article} updatedArticle 
+   */
   updateArticle(updatedArticle) {
     const index = this.articles.findIndex((article) => article.id.toString() === updatedArticle.id.toString());
     if (index !== -1) {
@@ -61,6 +79,10 @@ const dataState = {
     }
   },
 
+  /**
+   * 
+   * @param {string} id 
+   */
   removeArticle(id) {
     this.articles = this.articles.filter((article) => article.id.toString() !== id.toString());
   }
@@ -71,6 +93,7 @@ class DataService {
     if (DataService.instance) {
       return DataService.instance;
     }
+    /** @type {string} */
     this.apiUrl = apiUrl;
     this.state = state;
     DataService.instance = this;
