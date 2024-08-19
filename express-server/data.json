@@ -17,25 +17,24 @@
     ],
     "comments": [
       {
-        "id": "q8tdycl",
-        "author": "John Doe",
-        "text": "tsetasdasd",
-        "createdAt": "2024-08-17T11:43:02.300Z",
-        "likes": 6,
-        "replies": []
-      },
-      {
         "id": "stteqba",
         "author": "John Doe",
         "text": "test",
         "createdAt": "2024-08-17T16:12:28.219Z",
-        "likes": 1,
+        "likes": 2,
         "replies": [
           {
             "id": "avingrc",
             "author": "John Doe",
             "text": "asdasdasdasdasd",
             "createdAt": "2024-08-17T16:12:35.382Z",
+            "likes": 1
+          },
+          {
+            "id": "uoxb4ye",
+            "author": "John Doe",
+            "text": "test",
+            "createdAt": "2024-08-19T10:49:23.930Z",
             "likes": 1
           }
         ]
@@ -83,7 +82,7 @@
       "name": "John Doe"
     },
     "createdAt": "2023-11-28T12:00:00Z",
-    "content": "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of de Finibus Bonorum et Malorum (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, Lorem ipsum dolor sit amet.., comes from a line in section 1.10.32. The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for those interested. Sections 1.10.32 and 1.10.33 from de Finibus Bonorum et Malorum by Cicero are also reproduced in their exact original form, accompanied by English versions from the 1914 translation by H. Rackham.",
+    "content": "test test",
     "tags": [
       "blogging",
       "tutorial"
@@ -109,6 +108,20 @@
             "text": "asdasasd",
             "createdAt": "2024-08-18T10:15:30.242Z",
             "likes": 0
+          },
+          {
+            "id": "hg60l0q",
+            "author": "John Doe",
+            "text": "asd",
+            "createdAt": "2024-08-19T12:20:49.675Z",
+            "likes": 0
+          },
+          {
+            "id": "90tsj7r",
+            "author": "John Doe",
+            "text": "asd",
+            "createdAt": "2024-08-19T12:21:20.604Z",
+            "likes": 0
           }
         ]
       },
@@ -118,42 +131,26 @@
         "text": "asdasdasd",
         "createdAt": "2024-08-18T10:15:20.866Z",
         "likes": 0,
+        "replies": [
+          {
+            "id": "ib4bpfw",
+            "author": "John Doe",
+            "text": "test",
+            "createdAt": "2024-08-19T12:21:35.573Z",
+            "likes": 0
+          }
+        ]
+      },
+      {
+        "id": "wprc1f8",
+        "author": "John Doe",
+        "text": "asd",
+        "createdAt": "2024-08-19T12:30:00.983Z",
+        "likes": 0,
         "replies": []
       }
     ],
     "likes": 20,
     "views": 100
-  },
-  {
-    "id": "j3qdh4c",
-    "title": "test2",
-    "author": {
-      "name": "John Doe"
-    },
-    "content": "test test",
-    "tags": [
-      "test",
-      "test"
-    ],
-    "comments": [
-      {
-        "id": "0dv5tii",
-        "author": "John Doe",
-        "text": "asdasasd1212112",
-        "createdAt": "2024-08-17T12:22:41.880Z",
-        "likes": 0,
-        "replies": []
-      },
-      {
-        "id": "p8stfp7",
-        "author": "John Doe",
-        "text": "test",
-        "createdAt": "2024-08-18T14:06:45.581Z",
-        "likes": 0,
-        "replies": []
-      }
-    ],
-    "likes": 0,
-    "views": 0
   }
 ]

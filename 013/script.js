@@ -1,3 +1,5 @@
+const apiUrl = "http://localhost:3000/api/articles";
+
 /**
  * @typedef {Object} Author
  * @property {string} name
@@ -35,58 +37,65 @@
  * @property {number} views
  */
 
+const dataState = {
+  articles: [],
+  loaded: false,
+
+  setArticles(newArticles) {
+    this.articles = newArticles;
+    this.loaded = true;
+  },
+
+  getArticles() {
+    return this.articles;
+  },
+
+  addArticle(article) {
+    this.articles.push(article);
+  },
+
+  updateArticle(updatedArticle) {
+    const index = this.articles.findIndex((article) => article.id.toString() === updatedArticle.id.toString());
+    if (index !== -1) {
+      this.articles[index] = updatedArticle;
+    }
+  },
+
+  removeArticle(id) {
+    this.articles = this.articles.filter((article) => article.id.toString() !== id.toString());
+  }
+};
+
 class DataService {
-  /**
-   * @param {string} apiUrl
-   */
-  constructor(apiUrl) {
+  constructor(apiUrl, state) {
     if (DataService.instance) {
       return DataService.instance;
     }
-    /** @type {string} */
     this.apiUrl = apiUrl;
-    /** @type {Article[]} */
-    this.data = [];
+    this.state = state;
     DataService.instance = this;
   }
 
-  /**
-   * @returns {Promise<Article[] | null>}
-   */
-  async getAll() {
-    try {
-      const response = await fetch(this.apiUrl);
-      if (!response.ok) {
-        throw new Error(`Error fetching data: ${response.statusText}`);
+  async loadArticles() {
+    if (!this.state.loaded) {
+      try {
+        const response = await fetch(this.apiUrl);
+        if (!response.ok) {
+          throw new Error(`Error fetching data: ${response.statusText}`);
+        }
+        const data = await response.json();
+        this.state.setArticles(data);
+      } catch (error) {
+        console.error("Error loading articles:", error);
       }
-      this.data = await response.json();
-      return this.data;
-    } catch (error) {
-      console.error("Error fetching all data:", error);
-      return null;
     }
+    return this.state.getArticles();
   }
 
   /**
-   * @param {number} id
-   * @returns {Promise<Article | null>}
-   */
-  async getById(id) {
-    try {
-      const response = await fetch(`${this.apiUrl}/${id}`);
-      if (!response.ok) {
-        throw new Error(`Error fetching data: ${response.statusText}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching data by ID:", error);
-      return null;
-    }
-  }
-
-  /**
-   * @param {Article} article
-   * @returns {Promise<Article | null>}
+   * 
+   * @param {Article} article 
+   * @returns 
    */
   async create(article) {
     try {
@@ -101,7 +110,6 @@ class DataService {
         throw new Error(`Error creating data: ${response.statusText}`);
       }
       const newArticle = await response.json();
-      this.data.push(newArticle);
       return newArticle;
     } catch (error) {
       console.error("Error creating data:", error);
@@ -110,8 +118,9 @@ class DataService {
   }
 
   /**
-   * @param {Article} article
-   * @returns {Promise<Article | null>}
+   * 
+   * @param {Article} article 
+   * @returns 
    */
   async update(article) {
     if (!article.id) {
@@ -132,10 +141,6 @@ class DataService {
       }
 
       const updatedArticle = await response.json();
-      const index = this.data.findIndex((item) => item.id === article.id);
-      if (index !== -1) {
-        this.data[index] = updatedArticle;
-      }
       return updatedArticle;
     } catch (error) {
       console.error("Error updating data:", error);
@@ -144,8 +149,9 @@ class DataService {
   }
 
   /**
-   * @param {number} id
-   * @returns {Promise<boolean>}
+   * 
+   * @param {string} id 
+   * @returns 
    */
   async delete(id) {
     try {
@@ -155,19 +161,24 @@ class DataService {
       if (!response.ok) {
         throw new Error(`Error deleting data: ${response.statusText}`);
       }
-      this.data = this.data.filter((article) => article.id !== id);
       return true;
     } catch (error) {
       console.error("Error deleting data:", error);
       return false;
     }
   }
+}
 
-  /**
-   * @returns {Article[]}
-   */
-  getData() {
-    return this.data;
+const dataService = new DataService(apiUrl, dataState);
+
+document.addEventListener('load', loadData());
+
+async function loadData() {
+  try {
+    const articles = await dataService.loadArticles();
+    renderArticles(articles);
+  } catch (error) {
+    console.error(error);
   }
 }
 
@@ -209,20 +220,6 @@ function generateUniqueId() {
   return Math.random().toString(36).slice(2, 9);
 }
 
-const apiUrl = "http://localhost:3000/api/articles";
-const dataService = new DataService(apiUrl);
-
-/**
- * @returns {Promise<void>}
- */
-async function loadData() {
-  try {
-    await dataService.getAll();
-    renderArticles(dataService.getData());
-  } catch (error) {
-    console.error(error);
-  }
-}
 
 /**
  * @param {Article[]} articles
@@ -253,8 +250,6 @@ function renderArticles(articles) {
       .join("")
   );
 }
-
-
 
 /**
  *
@@ -325,8 +320,7 @@ function renderComments(articleId, commentId, comments, offset = false) {
             ${repliesHtml}
           </div>
 `;
-    })
-    .join("");
+    }).join("");
 }
 
 /**
@@ -337,12 +331,12 @@ function renderComments(articleId, commentId, comments, offset = false) {
 async function updateCommentData(commentIdHtml, updatedContent) {
   const [articleId, commentId, subCommentId] = extractIds(commentIdHtml);
 
-  const article = dataService.getData().find((a) => a.id === articleId);
-  const comment = article.comments.find((c) => c.id === commentId);
+  const article = dataState.getArticles().find((a) => a.id.toString() === articleId.toString());
+  const comment = article.comments.find((c) => c.id.toString() === commentId.toString());
   let commentToUpdate = comment;
 
   if (subCommentId) {
-    const subComment = comment.replies.find((r) => r.id === subCommentId);
+    const subComment = comment.replies.find((r) => r.id.toString() === subCommentId.toString());
     if (!subComment) return;
 
     commentToUpdate = subComment;
@@ -352,12 +346,10 @@ async function updateCommentData(commentIdHtml, updatedContent) {
 
   try {
     await dataService.update(article);
-    getData();
   } catch (err) {
     console.error("Error updating comment:", err);
   }
 }
-
 
 /**
  *
@@ -383,7 +375,6 @@ async function onSaveEditClick(commentId, event) {
   }
 }
 
-
 /**
  *
  * @param {string} commentId
@@ -406,26 +397,28 @@ function onCancelEditClick(commentId, event) {
  */
 function onEditClick(commentId) {
   const commentElement = document.getElementById(commentId);
-  if (!commentElement) return;
-
   const contentElement = commentElement.querySelector(".comment-text");
-  if (!contentElement) return;
-
-  if (commentElement.querySelector(".edit-textarea")) return;
-
   const currentText = contentElement.textContent.trim();
-
   contentElement.dataset.originalText = currentText;
 
-  contentElement.innerHTML = `
-    <textarea class="form-control edit-textarea" rows="5">${currentText}</textarea>
+  contentElement.innerHTML = editCommentForm(commentId, currentText);
+}
+
+/**
+ * 
+ * @param {string} commentId 
+ * @param {string} text 
+ * @returns {string}
+ */
+function editCommentForm(commentId, text) {
+  return `
+    <textarea class="form-control edit-textarea" rows="5">${text}</textarea>
     <div class="edit-actions mt-2">
       <button class="button-primary outline-none border-none save-edit" onclick="onSaveEditClick('${commentId}', event);">Save</button>
       <button class="button-primary outline-none border-none cancel-edit" onclick="onCancelEditClick('${commentId}', event);">Cancel</button>
     </div>
   `;
 }
-
 
 /**
  *
@@ -450,7 +443,7 @@ function toggleReplies(id) {
 }
 
 /**
- * Handles likes increment or decrement for a comment.
+ * 
  * @param {string} commentIdHtml
  * @param {number} change
  */
@@ -494,12 +487,12 @@ function onDecreaseLikesClick(commentIdHtml) {
 async function updateLikesData(commentIdHtml, updatedLikes) {
   const [articleId, commentId, subCommentId] = extractIds(commentIdHtml);
 
-  const article = dataService.getData().find((a) => a.id === articleId);
+  const article = dataState.getArticles().find((a) => a.id.toString() === articleId.toString());
 
-  const comment = article.comments.find((c) => c.id === commentId);
+  const comment = article.comments.find((c) => c.id.toString() === commentId.toString());
 
   if (subCommentId) {
-    const subComment = comment.replies.find((r) => r.id === subCommentId);
+    const subComment = comment.replies.find((r) => r.id.toString() === subCommentId.toString());
     if (subComment) {
       subComment.likes = updatedLikes;
     }
@@ -526,7 +519,16 @@ function onReplyClick(commentId) {
     return;
   }
 
-  const replyFormHtml = `
+  replyComment.insertAdjacentHTML("afterend", replyCommentForm(commentId));
+}
+
+/**
+ * 
+ * @param {string} commentId 
+ * @returns {string}
+ */
+function replyCommentForm(commentId) {
+  return `
     <div class="reply-form mt-2 comment row">
       <div class="col-12">
         <h3>Reply to comment</h3>
@@ -540,26 +542,20 @@ function onReplyClick(commentId) {
       </div>
     </div>
   `;
-
-  replyComment.insertAdjacentHTML("afterend", replyFormHtml);
 }
 
 /**
  *
  * @param {string} commentId
  */
-async function onSubmitReply(commentId) {
+function onSubmitReply(commentId) {
   const replyForm = document.getElementById(commentId).nextElementSibling;
 
   const replyText = replyForm.querySelector("textarea").value.trim();
-  if (!replyText) {
-    return;
-  }
-
   const [articleId, commentsId, subCommentId] = extractIds(commentId);
 
-  const updatedData = dataService.getData();
-  const article = updatedData.find((article) => article.id == articleId);
+  const updatedData = dataState.getArticles();
+  const article = updatedData.find((article) => article.id.toString() === articleId.toString());
   const comment = findCommentById(article.comments, commentsId, subCommentId);
 
   const newReply = {
@@ -573,8 +569,7 @@ async function onSubmitReply(commentId) {
   comment.replies.push(newReply);
 
   try {
-    await dataService.update(article);
-    loadData();
+    dataService.update(article);
   } catch (err) {
     console.error("Failed to update article with new reply:", err);
   }
@@ -586,16 +581,15 @@ async function onSubmitReply(commentId) {
  * @param {number} subCommentId
  */
 function findCommentById(comments, commentId, subCommentId = null) {
-  const comment = comments.find((comment) => comment.id == commentId);
+  const comment = comments.find((comment) => comment.id.toString() === commentId.toString());
+
   if (!comment) {
     return null;
-  }
-
-  if (!subCommentId) {
+  } else if (!subCommentId) {
     return comment;
   }
 
-  const reply = comment.replies.find((reply) => reply.id == subCommentId);
+  const reply = comment.replies.find((reply) => reply.id.toString() === subCommentId.toString());
   return reply || null;
 }
 
@@ -616,15 +610,14 @@ async function onDeleteClick(commentIdHtml) {
   const element = document.getElementById(commentIdHtml);
   const [articleId, commentId, subCommentId] = extractIds(commentIdHtml);
 
-  const updatedData = removeComment(dataService.getData(), articleId, commentId, subCommentId);
+  const updatedData = removeComment(dataState.getArticles(), articleId, commentId, subCommentId);
 
-  const updatedArticle = updatedData.find((article) => article.id == articleId);
+  const updatedArticle = updatedData.find((article) => article.id.toString() === articleId.toString());
 
   if (updatedArticle) {
     try {
       await dataService.update(updatedArticle);
       element.remove();
-      loadData();
     } catch (error) {
       console.error("Error updating article:", error);
     }
@@ -641,13 +634,11 @@ function extractIds(inputString) {
 
   if (parts[0] === "comment") {
     return [parts[1], parts[2], null];
-  }
-
-  if (parts[0] === "sub" && parts[1] === "comment") {
+  } else if (parts[0] === "sub" && parts[1] === "comment") {
     return [parts[2], parts[3], parts[4]];
+  } else {
+    return [null, null, null];
   }
-
-  return [null, null, null];
 }
 
 /**
@@ -659,12 +650,12 @@ function extractIds(inputString) {
  */
 function removeComment(data, articleId, commentId, subCommentId) {
   return data.map((article) => {
-    if (article.id === articleId) {
+    if (article.id.toString() === articleId.toString()) {
       const updatedComments = article.comments
         .map((comment) => {
-          if (comment.id == commentId) {
+          if (comment.id.toString() === commentId.toString()) {
             if (subCommentId) {
-              const updatedReplies = comment.replies.filter((reply) => reply.id != subCommentId);
+              const updatedReplies = comment.replies.filter((reply) => reply.id.toString() !== subCommentId.toString());
               return {
                 ...comment,
                 replies: updatedReplies,
@@ -673,8 +664,7 @@ function removeComment(data, articleId, commentId, subCommentId) {
             return null;
           }
           return comment;
-        })
-        .filter((comment) => comment != null);
+        });
 
       return {
         ...article,
@@ -799,20 +789,32 @@ function onEditArticleClick(articleIdHtml) {
   const contentText = contentElement.textContent.trim();
   const tagsText = Array.from(tagsElements).map((tag) => tag.textContent.slice(1));
 
-  articleElement.innerHTML = `
+  articleElement.innerHTML = editArticleForm(articleIdHtml, titleText, contentText, tagsText);
+}
+
+/**
+ * 
+ * @param {string} articleId 
+ * @param {string} title 
+ * @param {string} content 
+ * @param {string[]} tags 
+ * @returns {string}
+ */
+function editArticleForm(articleId, title, content, tags) {
+  return `
     <div class="row mt--20 gap-3">
       <div class="col-12">
-        <input type="text" id="edit-article-title" class="form-control mb-3" value="${titleText}" />
+        <input type="text" id="edit-article-title" class="form-control mb-3" value="${title}" />
       </div>
       <div class="col-12">
-        <textarea id="edit-article-content" class="form-control mb-3" rows="4">${contentText}</textarea>
+        <textarea id="edit-article-content" class="form-control mb-3" rows="4">${content}</textarea>
       </div>
       <div class="col-12">
         <label for="edit-tags-wrapper" class="form-label">Tags
           <img src="./assets/plus-icon.svg" alt="Add Tag" class="comment-icon cursor-pointer" onclick="onAddEditTagClick();" />
         </label>
         <div id="edit-tags-wrapper" class="d-flex flex-wrap gap-2 mb-3">
-          ${tagsText
+          ${tags
       .map(
         (tag) =>
           `<div class="mb-2"><input type="text" class="form-control tag-element" value="${tag}" /></div>`
@@ -821,8 +823,8 @@ function onEditArticleClick(articleIdHtml) {
         </div>
       </div>
       <div class="col-12">
-        <button class="btn btn-primary" onclick="onSaveArticleClick('${articleIdHtml}')">Save</button>
-        <button class="btn btn-secondary" onclick="onCancelEditArticleClick('${articleIdHtml}')">Cancel</button>
+        <button class="btn btn-primary" onclick="onSaveArticleClick('${articleId}')">Save</button>
+        <button class="btn btn-secondary" onclick="onCancelEditArticleClick('${articleId}')">Cancel</button>
       </div>
     </div>
   `;
@@ -833,8 +835,6 @@ function onEditArticleClick(articleIdHtml) {
  * @param {string} articleIdHtml
  */
 async function onSaveArticleClick(articleIdHtml) {
-  const articleElement = document.getElementById(articleIdHtml);
-
   const title = document.getElementById("edit-article-title").value.trim();
   const content = document.getElementById("edit-article-content").value.trim();
   const tags = Array.from(document.querySelectorAll("#edit-tags-wrapper .tag-element"))
@@ -842,7 +842,7 @@ async function onSaveArticleClick(articleIdHtml) {
     .filter((tag) => tag !== "");
 
   const articleId = articleIdHtml.split("-")[1];
-  const article = dataService.getData().find((article) => article.id == articleId);
+  const article = dataState.getArticles().find((article) => article.id.toString() === articleId.toString());
 
   article.title = title;
   article.content = content;
@@ -850,7 +850,6 @@ async function onSaveArticleClick(articleIdHtml) {
 
   try {
     await dataService.update(article);
-    loadData();
   } catch (error) {
     console.error(error);
   }
@@ -899,7 +898,7 @@ async function onSubmitArticleComment(articleId) {
     return;
   }
 
-  const article = dataService.getData().find((article) => article.id === articleId);
+  const article = dataState.getArticles().find((article) => article.id.toString() === articleId.toString());
   if (!article) {
     console.error("Article not found");
     return;
@@ -918,7 +917,6 @@ async function onSubmitArticleComment(articleId) {
 
   try {
     await dataService.update(article);
-    loadData();
   } catch (err) {
     console.error("Error updating article with new comment:", err);
   }
@@ -930,8 +928,18 @@ async function onSubmitArticleComment(articleId) {
  */
 function onCreateArticleClick(event) {
   event.preventDefault();
+  const formContainer = document.getElementById("article-form-container");
+  formContainer.innerHTML = createArticleForm();
+  document.getElementById("article-creation").style.display = "none";
+  document.getElementById("article-form").addEventListener("submit", handleFormSubmit);
+}
 
-  const formHtml = `
+/**
+ * 
+ * @returns {string}
+ */
+function createArticleForm() {
+  return `
     <div class="row justify-content-center">
       <div class="col-md-8">
         <div class="card">
@@ -945,8 +953,8 @@ function onCreateArticleClick(event) {
                 <input type="text" class="form-control" id="article-title" required>
               </div>
               <div class="mb-3">
-                <label for="article-content" class="form-label">Content</label>
-                <textarea class="form-control" id="article-content" rows="4" required></textarea>
+                <label for="article-content-area" class="form-label">Content</label>
+                <textarea class="form-control" id="article-content-area" rows="4" required></textarea>
               </div>
               <div class="mb-3">
                 <label for="tags-wrapper" class="form-label">Tags
@@ -968,25 +976,23 @@ function onCreateArticleClick(event) {
       </div>
     </div>
   `;
-
-  const formContainer = document.getElementById("article-form-container");
-  formContainer.innerHTML = formHtml;
-
-  document.getElementById("article-creation").style.display = "none";
-
-  document.getElementById("article-form").addEventListener("submit", handleFormSubmit);
 }
 
 function onAddTagClick() {
   const tagsWrapper = document.getElementById("tags-wrapper");
+  tagsWrapper.insertAdjacentHTML("beforeend", addTagElement());
+}
 
-  const tagElement = `
+/**
+ * 
+ * @returns {string}
+ */
+function addTagElement() {
+  return `
     <div class="mb-2">
       <input type="text" class="form-control tag-element" placeholder="Tag">
     </div>
   `;
-
-  tagsWrapper.insertAdjacentHTML("beforeend", tagElement);
 }
 
 function onCancelArticleClick() {
@@ -1004,7 +1010,7 @@ async function handleFormSubmit(event) {
   event.preventDefault();
 
   const title = document.getElementById("article-title").value.trim();
-  const content = document.getElementById("article-content").value.trim();
+  const content = document.getElementById("article-content-area").value.trim();
   const tags = Array.from(document.querySelectorAll(".tag-element"))
     .map((tag) => tag.value.trim())
     .filter((tag) => tag !== "");
@@ -1027,5 +1033,3 @@ async function handleFormSubmit(event) {
 
   onCancelArticleClick();
 }
-
-loadData();
