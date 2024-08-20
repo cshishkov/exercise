@@ -194,7 +194,7 @@ class DataService {
 
 const dataService = new DataService(apiUrl, dataState);
 
-document.addEventListener('load', loadData());
+loadData();
 
 async function loadData() {
   try {
@@ -552,15 +552,15 @@ function onReplyClick(commentId) {
  */
 function replyCommentForm(commentId) {
   return `
-    <div class="reply-form mt-2 comment row">
+    <div class="reply-form mt-2 comment row p-3">
       <div class="col-12">
         <h3>Reply to comment</h3>
       </div>
       <div class="col-12">
         <textarea required class="form-control" rows="3" placeholder="Write your reply..."></textarea>
         <div class="mt-2 d-flex gap-2">
-          <button class="btn btn-primary" onclick="onSubmitReply('${commentId}')">Submit</button>
-          <button class="btn btn-secondary" onclick="onCancelReply('${commentId}')">Cancel</button>
+          <button class="button-primary outline-none border-none" onclick="onSubmitReply('${commentId}')">Submit</button>
+          <button class="button-primary outline-none border-none" onclick="onCancelReply('${commentId}')">Cancel</button>
         </div>
       </div>
     </div>
@@ -728,8 +728,8 @@ function renderArticle(index, author, date, commentsSize, title, content, tags, 
   const buttons = {
     edit: createButton('edit-icon.svg', 'color-purple-515', 'Edit', articleIndexHtml, 'onEditArticleClick'),
     delete: createButton('trash-icon.svg', 'color-red-d79', 'Delete', articleIndexHtml, 'onDeleteArticleClick'),
-    toggleComments: `<button id="toggle-comments-${articleIndexHtml}" class="button-primary outline-none border-none" onclick="toggleComments('${articleIndexHtml}')">
-    Show Comments</button>`,
+    toggleComments: comments && comments.length > 0 ? `<button id="toggle-comments-${articleIndexHtml}" class="button-primary outline-none border-none" onclick="toggleComments('${articleIndexHtml}')">
+    Show Comments</button>`: "",
     toggleCommentForm: `<button id="toggle-comment-form-${articleIndexHtml}" class="button-primary outline-none border-none" onclick="toggleCommentForm('${articleIndexHtml}')">Leave Comment</button>`
   };
 
@@ -764,9 +764,11 @@ function renderArticle(index, author, date, commentsSize, title, content, tags, 
      
       <div id="comment-form-${articleIndexHtml}" class="col-12 mt-2 comment p-3 d-none">
         <h3>Add a Comment</h3>
-        <textarea id="new-comment-${index}" class="form-control" rows="3" placeholder="Write your comment..."></textarea>
+        <textarea type="text" id="new-comment-${index}" class="form-control" rows="3" placeholder="Write your comment..."></textarea>
         <div class="mt-2 d-flex gap-2">
           <button class="button-primary outline-none border-none" onclick="onSubmitArticleComment('${index}')">Submit</button>
+          <button class="button-primary outline-none border-none" onclick="onCancelLeaveArticleComment('${articleIndexHtml}','${index}')">Cancel</button>
+
         </div>
       </div>
     </div>
@@ -774,6 +776,22 @@ function renderArticle(index, author, date, commentsSize, title, content, tags, 
         ${comments}
       </div>
   `;
+}
+
+/**
+ * 
+ * @param {string} articleIndexHtml 
+ */
+function onCancelLeaveArticleComment(articleIndexHtml, articleId) {
+  const commentForm = document.getElementById(`comment-form-${articleIndexHtml}`);
+  const leaveCommentButton = document.getElementById(`toggle-comment-form-${articleIndexHtml}`);
+  const textArea = document.getElementById(`new-comment-${articleId}`);
+
+  textArea.value = '';
+
+  commentForm.classList.add('d-none');
+
+  leaveCommentButton.innerText = 'Leave Comment';
 }
 
 const articleState = {};

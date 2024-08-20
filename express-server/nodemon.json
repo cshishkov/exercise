@@ -1,0 +1,11 @@
+{
+    "ignore": [
+        "**/data.json",
+        "*.log",
+        ".git",
+        "node_modules/*",
+        "*.tmp",
+        "*.bak",
+        "*.swp"
+    ]
+}
