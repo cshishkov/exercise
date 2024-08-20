@@ -369,6 +369,7 @@ async function updateCommentData(commentIdHtml, updatedContent) {
 
   try {
     await dataService.update(article);
+    dataState.updateArticle(article)
   } catch (err) {
     console.error("Error updating comment:", err);
   }
@@ -525,7 +526,7 @@ async function updateLikesData(commentIdHtml, updatedLikes) {
 
   try {
     await dataService.update(article);
-    getData();
+    dataState.updateArticle(article)
   } catch (err) {
     console.error("Failed to update likes:", err);
   }
@@ -571,7 +572,7 @@ function replyCommentForm(commentId) {
  *
  * @param {string} commentId
  */
-function onSubmitReply(commentId) {
+async function onSubmitReply(commentId) {
   const replyForm = document.getElementById(commentId).nextElementSibling;
 
   const replyText = replyForm.querySelector("textarea").value.trim();
@@ -592,7 +593,8 @@ function onSubmitReply(commentId) {
   comment.replies.push(newReply);
 
   try {
-    dataService.update(article);
+    await dataService.update(article);
+    dataState.updateArticle(article)
   } catch (err) {
     console.error("Failed to update article with new reply:", err);
   }
@@ -640,6 +642,7 @@ async function onDeleteClick(commentIdHtml) {
   if (updatedArticle) {
     try {
       await dataService.update(updatedArticle);
+      dataState.updateArticle(updatedArticle)
       element.remove();
     } catch (error) {
       console.error("Error updating article:", error);
@@ -891,6 +894,7 @@ async function onSaveArticleClick(articleIdHtml) {
 
   try {
     await dataService.update(article);
+    dataState.updateArticle(article)
   } catch (error) {
     console.error(error);
   }
@@ -922,6 +926,7 @@ async function onDeleteArticleClick(articleIdHtml) {
   if (confirm("Are you sure you want to delete this article?")) {
     try {
       await dataService.delete(articleId);
+      dataState.removeArticle(articleId)
       document.getElementById(articleIdHtml).remove();
     } catch (error) {
       console.error("Error deleting article:", error);
@@ -958,6 +963,7 @@ async function onSubmitArticleComment(articleId) {
 
   try {
     await dataService.update(article);
+    dataState.updateArticle(article)
   } catch (err) {
     console.error("Error updating article with new comment:", err);
   }
@@ -1071,6 +1077,5 @@ async function handleFormSubmit(event) {
   };
 
   await dataService.create(newArticle);
-
-  onCancelArticleClick();
+  dataState.addArticle(newArticle);
 }
