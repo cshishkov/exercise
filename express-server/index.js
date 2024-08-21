@@ -31,7 +31,7 @@ async function readData() {
 // Utility function to write data to the JSON file
 async function writeData(data) {
   try {
-    await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
+    await fs.writeFile(DATA_FILE, JSON.stringify(data, 2));
   } catch (err) {
     console.error("Error writing data:", err);
   }
@@ -97,7 +97,7 @@ app.delete("/api/articles/:id", async (req, res) => {
     let articles = await readData();
     const articleId = req.params.id;
 
-    const index = articles.findIndex(article => article.id === articleId);
+    const index = articles.findIndex(article => article.id.toString() === articleId.toString());
 
     if (index === -1) {
       return res.status(404).json({ message: "Article not found" });

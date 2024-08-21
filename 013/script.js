@@ -200,6 +200,7 @@ async function loadData() {
   try {
     const articles = await dataService.loadArticles();
     renderArticles(articles);
+    localStorage.setItem("articles", JSON.stringify(dataState))
   } catch (error) {
     console.error(error);
   }
@@ -307,42 +308,41 @@ function renderComments(articleId, commentId, comments, offset = false) {
       };
 
       return `
-  <div id='${commentIdHtml}' class="row comment mt-2 ${offsetClass} p-3">
-    <div class="col-1">
-      <div class="d-flex flex-column align-items-center justify-content-center likes-wrapper gap-3">
-        <img src="./assets/plus-icon.svg" alt="Plus icon" class="likes-icon" onclick="onIncrementLikesClick('${commentIdHtml}')"/>
-        <span class="font-weight-600 color-purple-515 likes-count">${comment.likes}</span>
-        <img src="./assets/minus-icon.svg" alt="Minus icon" class="likes-icon" onclick="onDecreaseLikesClick('${commentIdHtml}')"/>
-      </div>
-    </div>
-    <div class="col-11">
-      <div class="row">
-        <div class="col-12 d-flex flex-column flex-md-row justify-content-between">
-        <span class="d-flex align-items-center gap-2 p-2 p-md-0">
-          <img src="./assets/avatar-icon.jpeg" alt="" class="avatar-img" />
-          <h5 class="m-0 text-nowrap">${comment.author}</h5>
-          <p class="color-gray-8c8">
-            ${calculateDaysDifference(comment.createdAt)}
-          </p>
-          </span>
-          <span class="d-flex align-items-center gap-1">
-          ${buttons.edit}
-          ${buttons.delete}
-          ${buttons.reply}
-          </span>
-        </div>
-        <div class="col-12">
-        <p class="comment-text">${comment.text}</p>
-        </div>
-        
-      </div>
-      ${renderRepliesText}
-    </div>
-  </div>
- <div id="replies-${commentIdHtml}" class="replies-container d-none">
-            ${repliesHtml}
+          <div id='${commentIdHtml}' class="row comment mt-2 ${offsetClass} p-3">
+            <div class="col-1">
+              <div class="d-flex flex-column align-items-center justify-content-center likes-wrapper gap-3">
+                <img src="./assets/plus-icon.svg" alt="Plus icon" class="likes-icon" onclick="onIncrementLikesClick('${commentIdHtml}')"/>
+                <span class="font-weight-600 color-purple-515 likes-count">${comment.likes}</span>
+                <img src="./assets/minus-icon.svg" alt="Minus icon" class="likes-icon" onclick="onDecreaseLikesClick('${commentIdHtml}')"/>
+              </div>
+            </div>
+            <div class="col-11">
+              <div class="row">
+                <div class="col-12 d-flex flex-column flex-md-row justify-content-between">
+                <span class="d-flex align-items-center gap-2 p-2 p-md-0">
+                  <img src="./assets/avatar-icon.jpeg" alt="" class="avatar-img" />
+                  <h5 class="m-0 text-nowrap">${comment.author}</h5>
+                  <p class="color-gray-8c8">
+                    ${calculateDaysDifference(comment.createdAt)}
+                  </p>
+                  </span>
+                  <span class="d-flex align-items-center gap-1">
+                  ${buttons.edit}
+                  ${buttons.delete}
+                  ${buttons.reply}
+                  </span>
+                </div>
+                <div class="col-12">
+                <p class="comment-text">${comment.text}</p>
+                </div>
+                
+              </div>
+              ${renderRepliesText}
+            </div>
           </div>
-`;
+        <div id="replies-${commentIdHtml}" class="replies-container d-none">
+          ${repliesHtml}
+        </div>`;
     }).join("");
 }
 
@@ -369,7 +369,7 @@ async function updateCommentData(commentIdHtml, updatedContent) {
 
   try {
     await dataService.update(article);
-    dataState.updateArticle(article)
+    dataState.updateArticle(article);
   } catch (err) {
     console.error("Error updating comment:", err);
   }
@@ -380,7 +380,7 @@ async function updateCommentData(commentIdHtml, updatedContent) {
  * @param {string} commentId
  * @param {Event} event
  */
-async function onSaveEditClick(commentId, event) {
+function onSaveEditClick(commentId, event) {
   event.stopPropagation();
 
   const commentElement = document.getElementById(commentId);
@@ -388,12 +388,14 @@ async function onSaveEditClick(commentId, event) {
   const updatedText = textarea.value.trim();
 
   try {
-    await updateCommentData(commentId, updatedText);
+    updateCommentData(commentId, updatedText);
 
     const contentElement = commentElement.querySelector(".comment-text");
     if (contentElement) {
       contentElement.textContent = updatedText;
+      delete contentElement.dataset.originalText;
     }
+
   } catch (err) {
     console.error("Failed to update comment:", err);
   }
@@ -576,6 +578,11 @@ async function onSubmitReply(commentId) {
   const replyForm = document.getElementById(commentId).nextElementSibling;
 
   const replyText = replyForm.querySelector("textarea").value.trim();
+  if (!replyText) {
+    alert("Reply text cannot be empty.");
+    return;
+  }
+
   const [articleId, commentsId, subCommentId] = extractIds(commentId);
 
   const updatedData = dataState.getArticles();
@@ -594,7 +601,11 @@ async function onSubmitReply(commentId) {
 
   try {
     await dataService.update(article);
-    dataState.updateArticle(article)
+    dataState.updateArticle(article);
+    replyForm.querySelector("textarea").value = "";
+    replyForm.remove();
+
+
   } catch (err) {
     console.error("Failed to update article with new reply:", err);
   }
@@ -894,7 +905,12 @@ async function onSaveArticleClick(articleIdHtml) {
 
   try {
     await dataService.update(article);
-    dataState.updateArticle(article)
+    dataState.updateArticle(article);
+
+    const formContainer = document.getElementById("article-form-container");
+    formContainer.innerHTML = "";
+
+    document.getElementById("article-creation").style.display = "block";
   } catch (error) {
     console.error(error);
   }
@@ -963,7 +979,14 @@ async function onSubmitArticleComment(articleId) {
 
   try {
     await dataService.update(article);
-    dataState.updateArticle(article)
+    dataState.updateArticle(article);
+
+    const commentForm = document.getElementById(`comment-form-article-${articleId}`);
+    if (commentForm) {
+      commentForm.classList.add("d-none");
+      document.getElementById(`new-comment-${articleId}`).value = "";
+    }
+
   } catch (err) {
     console.error("Error updating article with new comment:", err);
   }
@@ -1025,6 +1048,10 @@ function createArticleForm() {
   `;
 }
 
+/**
+ * 
+ * @returns {void}
+ */
 function onAddTagClick() {
   const tagsWrapper = document.getElementById("tags-wrapper");
   tagsWrapper.insertAdjacentHTML("beforeend", addTagElement());
@@ -1042,6 +1069,9 @@ function addTagElement() {
   `;
 }
 
+/**
+ * @returns {void}
+ */
 function onCancelArticleClick() {
   const formContainer = document.getElementById("article-form-container");
   formContainer.innerHTML = "";
@@ -1076,6 +1106,14 @@ async function handleFormSubmit(event) {
     views: 0,
   };
 
-  await dataService.create(newArticle);
-  dataState.addArticle(newArticle);
+  try {
+    await dataService.create(newArticle);
+    dataState.addArticle(newArticle);
+    const formContainer = document.getElementById("article-form-container");
+    formContainer.innerHTML = "";
+
+    document.getElementById("article-creation").style.display = "block";
+  } catch (error) {
+    console.error(error);
+  }
 }
